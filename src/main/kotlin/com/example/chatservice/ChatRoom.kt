@@ -1,9 +1,10 @@
 package com.example.chatservice
 
+import java.io.Serializable
 import java.util.*
 
 data class ChatRoom(
     val roomId: String = UUID.randomUUID().toString(),
     val name: String,
-    val sessions: MutableSet<String> = mutableSetOf() // 세션 관리를 위한 구조
-)
+    var userCount: Long = 0 // 현재 접속자 수
+) : Serializable

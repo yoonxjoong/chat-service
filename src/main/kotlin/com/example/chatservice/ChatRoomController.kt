@@ -23,4 +23,10 @@ class ChatRoomController(private val chatRoomRepository: ChatRoomRepository) {
     fun roomInfo(@PathVariable roomId: String): ChatRoom? {
         return chatRoomRepository.findRoomById(roomId)
     }
+
+    // 채팅방 삭제
+    @DeleteMapping("/room/{roomId}")
+    fun deleteRoom(@PathVariable roomId: String) {
+        chatRoomRepository.deleteRoom(roomId)
+    }
 }

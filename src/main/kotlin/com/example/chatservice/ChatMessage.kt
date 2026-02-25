@@ -5,5 +5,6 @@ data class ChatMessage(
     val type: MessageType,
     val roomId: String,
     val sender: String,
-    val message: String = ""
+    val message: String = "",
+    val userCount: Long = 0 // 현재 채팅방 인원수
 )

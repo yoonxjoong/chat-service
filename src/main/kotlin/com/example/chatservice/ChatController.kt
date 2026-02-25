@@ -7,7 +7,8 @@ import org.springframework.stereotype.Controller
 @Controller
 class ChatController(
     private val redisPublisher: RedisPublisher,
-    private val channelTopic: ChannelTopic
+    private val channelTopic: ChannelTopic,
+    private val chatRoomRepository: ChatRoomRepository
 ) {
     /**
      * websocket "/pub/chat/message"로 들어오는 메시징을 처리한다.
@@ -17,7 +18,18 @@ class ChatController(
         var updatedMessage = message
 
         if (message.type == MessageType.ENTER) {
-            updatedMessage = message.copy(message = "${message.sender}님이 입장하셨습니다.")
+            // 채팅방이 존재하는지 확인
+            val chatRoom = chatRoomRepository.findRoomById(message.roomId)
+            if (chatRoom != null) {
+                // 인원수 관리를 위해 유저 추가
+                chatRoomRepository.addUser(message.roomId, message.sender)
+                updatedMessage = message.copy(
+                    message = "${message.sender}님이 입장하셨습니다.",
+                    userCount = chatRoomRepository.getUserCount(message.roomId) // 업데이트된 인원수 반영
+                )
+            } else {
+                return
+            }
         }
         
         // Websocket에 발행된 메시지를 redis로 발행한다(publish)

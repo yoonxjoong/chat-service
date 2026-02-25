@@ -37,6 +37,9 @@ class ChatIntegrationTest {
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
+    @Autowired
+    private lateinit var chatRoomRepository: ChatRoomRepository
+
     private lateinit var stompClient: WebSocketStompClient
 
     companion object {
@@ -62,7 +65,8 @@ class ChatIntegrationTest {
 
     @Test
     fun `메시지 송수신 테스트`() {
-        val roomId = "test-room"
+        val room = chatRoomRepository.createChatRoom("Message Test Room")
+        val roomId = room.roomId
         val sender = "tester"
         val messageContent = "Hello, World!"
         
@@ -101,7 +105,9 @@ class ChatIntegrationTest {
 
     @Test
     fun `입장 메시지 테스트`() {
-        val roomId = "enter-room"
+        // 방을 먼저 생성 (컨트롤러에서도 검증하므로 필요)
+        val room = chatRoomRepository.createChatRoom("Entry Test Room")
+        val roomId = room.roomId
         val sender = "new-user"
         
         val blockingQueue: BlockingQueue<ChatMessage> = LinkedBlockingDeque()
@@ -128,5 +134,7 @@ class ChatIntegrationTest {
         assertThat(receivedMessage).isNotNull
         assertThat(receivedMessage?.sender).isEqualTo(sender)
         assertThat(receivedMessage?.message).isEqualTo("${sender}님이 입장하셨습니다.")
+        assertThat(receivedMessage?.userCount).isEqualTo(1L) // 첫 번째 유저이므로 1명이어야 함
     }
+
 }

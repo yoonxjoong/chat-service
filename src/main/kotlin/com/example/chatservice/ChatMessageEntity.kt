@@ -10,12 +10,12 @@ class ChatMessageEntity(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
 
-    val type: String,
-    val roomId: String,
-    val sender: String,
+    val type: String = "",
+    val roomId: String = "",
+    val sender: String = "",
     
     @Column(columnDefinition = "TEXT")
-    val message: String,
+    val message: String = "",
     
     val createdAt: LocalDateTime = LocalDateTime.now()
 )

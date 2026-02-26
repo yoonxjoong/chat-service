@@ -144,7 +144,7 @@
             }
         }
 
-        function enterRoom(roomId, roomName) {
+        async function enterRoom(roomId, roomName) {
             if (currentRoomId === roomId) return;
             
             // 기존 구독 해제
@@ -155,6 +155,23 @@
             currentRoomId = roomId;
             document.getElementById('active-room-title').innerText = `${roomName} (참여 중)`;
             document.getElementById('message-container').innerHTML = '';
+            
+            // 과거 메시지 내역 불러오기 추가
+            try {
+                const response = await fetch(`/chat/room/${roomId}/messages`);
+                const messages = await response.json();
+                messages.forEach(msg => {
+                    showGreeting({
+                        type: 'TALK',
+                        sender: msg.sender,
+                        message: msg.message,
+                        roomId: msg.roomId
+                    }, true); // isHistory 플래그 추가
+                });
+            } catch (error) {
+                console.error('Error loading message history:', error);
+            }
+
             document.getElementById('message-input').disabled = false;
             document.getElementById('send-btn').disabled = false;
             document.getElementById('leave-btn').style.display = 'block';
@@ -228,11 +245,11 @@
             }
         }
 
-        function showGreeting(message) {
+        function showGreeting(message, isHistory = false) {
             const container = document.getElementById('message-container');
             
-            // 시스템 메시지 처리 및 상단 타이틀 갱신
-            if (message.type === 'ENTER' || message.type === 'QUIT') {
+            // 시스템 메시지 처리 및 상단 타이틀 갱신 (과거 내역이 아닐 때만)
+            if (!isHistory && (message.type === 'ENTER' || message.type === 'QUIT')) {
                 const div = document.createElement('div');
                 div.className = 'system-message';
                 div.innerText = message.message;
@@ -245,7 +262,7 @@
                 }
                 
                 loadRooms(); // 목록의 인원수도 함께 갱신
-            } else {
+            } else if (message.type === 'TALK') {
                 const isMine = message.sender === username;
                 const div = document.createElement('div');
                 div.className = `message ${isMine ? 'mine' : 'others'}`;

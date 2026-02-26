@@ -16,5 +16,7 @@ class Member(
     
     var nickname: String = "",
 
-    var profileImageUrl: String? = null
+    var profileImageUrl: String? = null,
+
+    var distanceUnit: String = "METER" // 추가: METER 또는 YARD
 )

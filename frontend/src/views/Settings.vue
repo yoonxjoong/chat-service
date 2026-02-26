@@ -63,12 +63,14 @@
               <div class="w-4 h-4 bg-white rounded-full absolute right-1 top-1"></div>
             </div>
           </div>
-          <div class="flex items-center justify-between p-6 hover:bg-slate-50 transition-colors rounded-2xl">
+          <div class="flex items-center justify-between p-6 hover:bg-slate-50 transition-colors rounded-2xl cursor-pointer" @click="toggleUnit">
             <div>
               <p class="font-bold text-slate-700 text-sm">단위 설정 (m / yards)</p>
               <p class="text-xs text-slate-400 font-medium">기록 시 사용할 기본 단위를 선택합니다.</p>
             </div>
-            <span class="text-xs font-black text-primary-600 px-3 py-1 bg-primary-50 rounded-lg">METER (m)</span>
+            <span class="text-xs font-black text-primary-600 px-3 py-1 bg-primary-50 rounded-lg uppercase transition-all active:scale-95">
+              {{ profileEdit.distanceUnit === 'YARD' ? 'YARD (yd)' : 'METER (m)' }}
+            </span>
           </div>
         </div>
       </section>
@@ -82,11 +84,11 @@
           </h3>
         </div>
         <div class="divide-y divide-slate-50">
-          <button class="w-full flex items-center justify-between p-6 hover:bg-slate-50 transition-all group">
+          <button @click="$router.push('/privacy')" class="w-full flex items-center justify-between p-6 hover:bg-slate-50 transition-all group text-left">
             <span class="text-sm font-bold text-slate-600 group-hover:text-slate-900">개인정보 처리방침</span>
             <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="3" /></svg>
           </button>
-          <button class="w-full flex items-center justify-between p-6 hover:bg-slate-50 transition-all group">
+          <button @click="$router.push('/terms')" class="w-full flex items-center justify-between p-6 hover:bg-slate-50 transition-all group text-left">
             <span class="text-sm font-bold text-slate-600 group-hover:text-slate-900">서비스 이용약관</span>
             <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="3" /></svg>
           </button>
@@ -120,9 +122,9 @@ import { useRouter } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 
 const router = useRouter()
-const user = ref({ username: '', nickname: '', profileImageUrl: '' })
+const user = ref({ username: '', nickname: '', profileImageUrl: '', distanceUnit: 'METER' })
 const isUpdating = ref(false)
-const profileEdit = ref({ nickname: '', profileImageUrl: '' })
+const profileEdit = ref({ nickname: '', profileImageUrl: '', distanceUnit: 'METER' })
 
 const fetchUser = async () => {
   try {
@@ -130,11 +132,17 @@ const fetchUser = async () => {
     user.value = res.data
     profileEdit.value = { 
       nickname: res.data.nickname, 
-      profileImageUrl: res.data.profileImageUrl || '' 
+      profileImageUrl: res.data.profileImageUrl || '',
+      distanceUnit: res.data.distanceUnit || 'METER'
     }
   } catch (err) {
     router.push('/login')
   }
+}
+
+const toggleUnit = async () => {
+  profileEdit.value.distanceUnit = profileEdit.value.distanceUnit === 'METER' ? 'YARD' : 'METER'
+  await updateProfile()
 }
 
 const updateProfile = async () => {

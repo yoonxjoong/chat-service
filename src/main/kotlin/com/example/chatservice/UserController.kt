@@ -14,7 +14,8 @@ class UserController(private val memberRepository: MemberRepository) {
         return mapOf(
             "username" to (member?.username ?: ""),
             "nickname" to (member?.nickname ?: userDetails.username),
-            "profileImageUrl" to member?.profileImageUrl
+            "profileImageUrl" to member?.profileImageUrl,
+            "distanceUnit" to (member?.distanceUnit ?: "METER")
         )
     }
 
@@ -28,6 +29,10 @@ class UserController(private val memberRepository: MemberRepository) {
         
         member.nickname = profileDto.nickname
         member.profileImageUrl = profileDto.profileImageUrl
+        // 단위 설정 업데이트 추가
+        if (profileDto.distanceUnit != null) {
+            member.distanceUnit = profileDto.distanceUnit
+        }
         memberRepository.save(member)
         
         return mapOf("message" to "프로필이 수정되었습니다.")
@@ -45,5 +50,6 @@ class UserController(private val memberRepository: MemberRepository) {
 
 data class ProfileUpdateDto(
     val nickname: String,
-    val profileImageUrl: String?
+    val profileImageUrl: String?,
+    val distanceUnit: String? // 추가
 )

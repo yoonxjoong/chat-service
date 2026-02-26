@@ -105,7 +105,6 @@ class ChatIntegrationTest {
 
     @Test
     fun `입장 메시지 테스트`() {
-        // 방을 먼저 생성 (컨트롤러에서도 검증하므로 필요)
         val room = chatRoomRepository.createChatRoom("Entry Test Room")
         val roomId = room.roomId
         val sender = "new-user"
@@ -134,7 +133,54 @@ class ChatIntegrationTest {
         assertThat(receivedMessage).isNotNull
         assertThat(receivedMessage?.sender).isEqualTo(sender)
         assertThat(receivedMessage?.message).isEqualTo("${sender}님이 입장하셨습니다.")
-        assertThat(receivedMessage?.userCount).isEqualTo(1L) // 첫 번째 유저이므로 1명이어야 함
+        assertThat(receivedMessage?.userCount).isEqualTo(1L)
+    }
+
+    @Test
+    fun `퇴장 메시지 테스트`() {
+        val room = chatRoomRepository.createChatRoom("Exit Test Room")
+        val roomId = room.roomId
+        val sender = "exit-user"
+        
+        // 먼저 입장 처리
+        chatRoomRepository.addUser(roomId, sender)
+        
+        val blockingQueue: BlockingQueue<ChatMessage> = LinkedBlockingDeque()
+        val url = "ws://localhost:$port/ws-stomp"
+        val session: StompSession = stompClient.connectAsync(url, object : StompSessionHandlerAdapter() {}).get(5, TimeUnit.SECONDS)
+
+        session.subscribe("/sub/chat/room/$roomId", object : StompFrameHandler {
+            override fun getPayloadType(headers: StompHeaders): Type = ChatMessage::class.java
+            override fun handleFrame(headers: StompHeaders, payload: Any?) {
+                blockingQueue.offer(payload as ChatMessage)
+            }
+        })
+
+        val quitMessage = ChatMessage(
+            type = MessageType.QUIT,
+            roomId = roomId,
+            sender = sender
+        )
+        session.send("/pub/chat/message", quitMessage)
+
+        val receivedMessage = blockingQueue.poll(5, TimeUnit.SECONDS)
+        
+        assertThat(receivedMessage).isNotNull
+        assertThat(receivedMessage?.message).isEqualTo("${sender}님이 퇴장하셨습니다.")
+        assertThat(receivedMessage?.userCount).isEqualTo(0L)
+    }
+
+    @Test
+    fun `채팅방 목록 조회 테스트`() {
+        val roomName = "List Test Room"
+        chatRoomRepository.createChatRoom(roomName)
+        
+        val rooms = chatRoomRepository.findAllRooms()
+        
+        assertThat(rooms).isNotEmpty
+        val room = rooms.find { it.name == roomName }
+        assertThat(room).isNotNull
+        assertThat(room).isInstanceOf(ChatRoom::class.java)
     }
 
 }

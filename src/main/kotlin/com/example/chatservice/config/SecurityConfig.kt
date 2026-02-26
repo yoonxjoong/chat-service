@@ -23,8 +23,8 @@ class SecurityConfig {
             .headers { it.frameOptions { frame -> frame.sameOrigin() } }
             .authorizeHttpRequests { auth ->
                 auth
-                    // 가입 및 중복체크, 정적 리소스 허용
-                    .requestMatchers("/", "/api/member/register", "/api/member/check-id", "/static/**", "/favicon.ico").permitAll()
+                    // 가입 및 중복체크, 정적 리소스, 업로드 이미지 허용
+                    .requestMatchers("/", "/api/member/register", "/api/member/check-id", "/static/**", "/favicon.ico", "/uploads/**").permitAll()
                     // 채팅, 수영 기록 및 내 정보 조회는 인증 필요
                     .requestMatchers("/chat/**", "/ws-stomp/**", "/api/user/me", "/api/swimming/**").authenticated()
                     .anyRequest().permitAll()

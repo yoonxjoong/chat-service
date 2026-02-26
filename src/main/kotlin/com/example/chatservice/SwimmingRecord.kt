@@ -19,5 +19,7 @@ class SwimmingRecord(
     var duration: Int = 0,
     
     @Column(columnDefinition = "TEXT")
-    var memo: String? = null
+    var memo: String? = null,
+
+    var imageUrl: String? = null
 )

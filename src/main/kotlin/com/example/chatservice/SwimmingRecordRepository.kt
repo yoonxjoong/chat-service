@@ -6,4 +6,5 @@ import java.time.LocalDate
 interface SwimmingRecordRepository : JpaRepository<SwimmingRecord, Long> {
     fun findAllByMemberAndDateBetween(member: Member, start: LocalDate, end: LocalDate): List<SwimmingRecord>
     fun findByMemberAndDate(member: Member, date: LocalDate): SwimmingRecord?
+    fun deleteAllByMember(member: Member)
 }

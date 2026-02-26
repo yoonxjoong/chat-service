@@ -18,5 +18,8 @@ class Member(
 
     var profileImageUrl: String? = null,
 
-    var distanceUnit: String = "METER" // 추가: METER 또는 YARD
+    var distanceUnit: String = "METER",
+
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val swimmingRecords: MutableList<SwimmingRecord> = mutableListOf()
 )

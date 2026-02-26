@@ -5,8 +5,8 @@
     <!-- Main Content -->
     <main class="flex-1 p-6 max-w-5xl mx-auto w-full space-y-8">
       <div class="flex flex-col">
-        <h2 class="text-3xl font-black text-slate-800 tracking-tighter">데이터 시각화</h2>
-        <p class="text-sm text-slate-400 font-bold">나의 수영 성장 그래프</p>
+        <h2 class="text-3xl font-black text-slate-800 tracking-tighter">데이터 시각화 ({{ unitLabel }})</h2>
+        <p class="text-sm text-slate-400 font-bold tracking-widest uppercase">나의 수영 성장 그래프</p>
       </div>
 
       <!-- Charts Grid -->
@@ -15,9 +15,9 @@
           <div class="flex justify-between items-center mb-8">
             <div>
               <h3 class="text-lg font-black text-slate-800 tracking-tight">주간 수영 거리</h3>
-              <p class="text-xs text-slate-400 font-bold">최근 7일간의 기록 (m)</p>
+              <p class="text-xs text-slate-400 font-bold">최근 7일간의 기록 ({{ unitLabel }})</p>
             </div>
-            <div class="text-primary-600 font-black text-sm">WEEKLY</div>
+            <div class="text-primary-600 font-black text-sm uppercase">WEEKLY</div>
           </div>
           <div class="h-64 relative">
             <canvas ref="weeklyChartCanvas"></canvas>
@@ -28,9 +28,9 @@
           <div class="flex justify-between items-center mb-8">
             <div>
               <h3 class="text-lg font-black text-slate-800 tracking-tight">월간 성장 추이</h3>
-              <p class="text-xs text-slate-400 font-bold">최근 6개월간의 합계 (m)</p>
+              <p class="text-xs text-slate-400 font-bold">최근 6개월간의 합계 ({{ unitLabel }})</p>
             </div>
-            <div class="text-orange-500 font-black text-sm">MONTHLY</div>
+            <div class="text-orange-500 font-black text-sm uppercase">MONTHLY</div>
           </div>
           <div class="h-64 relative">
             <canvas ref="monthlyChartCanvas"></canvas>
@@ -42,16 +42,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import Chart from 'chart.js/auto'
 import AppHeader from '../components/AppHeader.vue'
 
 const router = useRouter()
-const user = ref({ nickname: '' })
+const user = ref({ nickname: '', distanceUnit: 'METER' })
 const weeklyChartCanvas = ref(null)
 const monthlyChartCanvas = ref(null)
+
+const M_TO_YD = 1.09361
+const unitLabel = computed(() => user.value.distanceUnit === 'YARD' ? 'yd' : 'm')
+
+const toDisplayDistance = (m) => {
+  if (user.value.distanceUnit === 'YARD') return Math.round(m * M_TO_YD)
+  return m
+}
 
 const fetchUser = async () => {
   try {
@@ -67,16 +75,16 @@ const renderCharts = async () => {
     const res = await axios.get('/api/swimming/stats/summary')
     const { weekly, monthly } = res.data
 
+    // Weekly Chart
     new Chart(weeklyChartCanvas.value, {
       type: 'bar',
       data: {
         labels: weekly.map(d => d.date.split('-').slice(1).join('/')),
         datasets: [{
-          label: '거리 (m)',
-          data: weekly.map(d => d.distance),
+          label: `거리 (${unitLabel.value})`,
+          data: weekly.map(d => toDisplayDistance(d.distance)),
           backgroundColor: '#0ea5e9',
           borderRadius: 12,
-          borderSkipped: false,
           barPercentage: 0.6
         }]
       },
@@ -91,13 +99,14 @@ const renderCharts = async () => {
       }
     })
 
+    // Monthly Chart
     new Chart(monthlyChartCanvas.value, {
       type: 'line',
       data: {
         labels: monthly.map(d => d.month),
         datasets: [{
-          label: '총 거리 (m)',
-          data: monthly.map(d => d.distance),
+          label: `총 거리 (${unitLabel.value})`,
+          data: monthly.map(d => toDisplayDistance(d.distance)),
           borderColor: '#f97316',
           backgroundColor: 'rgba(249, 115, 22, 0.1)',
           fill: true,

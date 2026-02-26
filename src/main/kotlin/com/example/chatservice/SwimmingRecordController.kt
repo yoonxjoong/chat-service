@@ -11,10 +11,13 @@ import java.time.YearMonth
 @RequestMapping("/api/swimming")
 class SwimmingRecordController(
     private val swimmingRecordRepository: SwimmingRecordRepository,
-    private val memberRepository: MemberRepository
+    private val memberRepository: MemberRepository,
+    private val redisPublisher: RedisPublisher,
+    private val channelTopic: org.springframework.data.redis.listener.ChannelTopic
 ) {
 
     @GetMapping("/records")
+    // ... (기존 코드 유지)
     fun getRecords(
         @AuthenticationPrincipal userDetails: UserDetails,
         @RequestParam year: Int,
@@ -53,6 +56,21 @@ class SwimmingRecordController(
                 imageUrl = dto.imageUrl
             )
             swimmingRecordRepository.save(record)
+        }
+
+        // 오늘 기록인 경우 채팅방에 알림 메시지 발송
+        if (dto.date == LocalDate.now()) {
+            val unit = if (member.distanceUnit == "YARD") "yd" else "m"
+            val displayDistance = if (member.distanceUnit == "YARD") Math.round(dto.distance * 1.09361) else dto.distance
+            
+            val systemMsg = ChatMessage(
+                type = MessageType.TALK,
+                roomId = "today-swim-room",
+                sender = "시스템",
+                senderId = "system",
+                message = "${member.nickname}님이 오늘 ${displayDistance}${unit} 수영을 완료했습니다! 🏊‍♂️"
+            )
+            redisPublisher.publish(channelTopic, systemMsg)
         }
         
         return mapOf("message" to "기록이 저장되었습니다.")

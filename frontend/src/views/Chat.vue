@@ -248,7 +248,16 @@ onMounted(async () => {
   try {
     await fetchUser()
     connect()
-    fetchRooms()
+    await fetchRooms()
+    
+    // URL에 roomId가 있으면 자동 입장
+    const urlParams = new URLSearchParams(window.location.search)
+    const rid = urlParams.get('roomId')
+    if (rid) {
+      const room = rooms.value.find(r => r.roomId === rid)
+      if (room) enterRoom(room)
+    }
+
     setInterval(fetchRooms, 5000)
   } catch (err) {}
 })

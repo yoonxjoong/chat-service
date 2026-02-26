@@ -12,7 +12,9 @@ class Member(
     @Column(unique = true)
     val username: String = "",
     
-    val password: String = "",
+    var password: String = "",
     
-    val nickname: String = ""
+    var nickname: String = "",
+
+    var profileImageUrl: String? = null
 )

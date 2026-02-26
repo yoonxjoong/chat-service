@@ -10,12 +10,24 @@
         </div>
         <h1 class="text-xl font-bold text-slate-800 tracking-tight">Gemini Chat</h1>
       </div>
+      
       <div class="flex items-center gap-4">
-        <div class="flex flex-col items-end">
-          <span class="text-sm font-bold text-slate-700">{{ user.nickname }}</span>
-          <span class="text-xs text-slate-400">{{ user.username }}</span>
+        <!-- User Profile Trigger -->
+        <div class="flex items-center gap-3 cursor-pointer group px-3 py-1.5 rounded-xl hover:bg-slate-50 transition-colors" @click="openProfileModal">
+          <div class="flex flex-col items-end">
+            <span class="text-sm font-bold text-slate-700 group-hover:text-primary-600 transition-colors">{{ user.nickname }}</span>
+            <span class="text-[10px] text-slate-400">내 프로필 설정</span>
+          </div>
+          <!-- Avatar Display -->
+          <div class="w-10 h-10 rounded-full border-2 border-white shadow-sm overflow-hidden flex items-center justify-center bg-primary-100">
+            <img v-if="user.profileImageUrl" :src="user.profileImageUrl" class="w-full h-full object-cover" />
+            <span v-else class="text-primary-700 font-bold text-sm">{{ user.nickname?.charAt(0) }}</span>
+          </div>
         </div>
-        <button @click="logout" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100">
+        
+        <div class="h-8 w-px bg-slate-200 mx-1"></div>
+        
+        <button @click="logout" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
           로그아웃
         </button>
       </div>
@@ -26,7 +38,7 @@
       <aside class="w-80 bg-white border-r border-slate-200 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
           <h2 class="font-bold text-slate-800">채팅방 목록</h2>
-          <button @click="createRoom" class="w-8 h-8 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-md shadow-primary-100 transition-transform active:scale-90">
+          <button @click="createRoom" class="w-8 h-8 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-md">
             <span class="text-xl">+</span>
           </button>
         </div>
@@ -50,25 +62,23 @@
                 </span>
               </div>
             </div>
-            <p class="text-xs text-slate-400 truncate group-hover:text-slate-500">대화에 참여해보세요</p>
+            <p class="text-xs text-slate-400 truncate">대화에 참여해보세요</p>
           </div>
         </div>
       </aside>
 
       <!-- Main Chat Area -->
       <section class="flex-1 flex flex-col bg-white relative">
-        <!-- Chat Header -->
         <div v-if="currentRoom" class="p-4 border-b border-slate-100 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-10">
           <div class="flex flex-col">
             <span class="font-bold text-slate-800">{{ currentRoom.name }}</span>
             <span class="text-[10px] text-slate-400">참여 중</span>
           </div>
-          <button @click="leaveRoom" class="px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+          <button @click="leaveRoom" class="px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg">
             방 나가기
           </button>
         </div>
 
-        <!-- Messages Container -->
         <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed" ref="messageBox">
           <div v-if="!currentRoom" class="h-full flex flex-col items-center justify-center text-slate-300">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -99,18 +109,14 @@
           </template>
         </div>
 
-        <!-- Input Area -->
         <div v-if="currentRoom" class="p-4 bg-white border-t border-slate-100">
-          <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200 focus-within:border-primary-400 focus-within:ring-4 focus-within:ring-primary-50 transition-all">
+          <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200 focus-within:border-primary-400 transition-all">
             <input 
               v-model="newMessage" @keypress.enter="sendMessage"
               class="flex-1 bg-transparent border-none outline-none px-3 py-2 text-sm placeholder:text-slate-400"
               placeholder="따뜻한 한마디를 건네보세요..."
             />
-            <button 
-              @click="sendMessage" :disabled="!newMessage.trim()"
-              class="w-10 h-10 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white rounded-xl shadow-md shadow-primary-100 disabled:opacity-30 disabled:shadow-none transition-all active:scale-90"
-            >
+            <button @click="sendMessage" :disabled="!newMessage.trim()" class="w-10 h-10 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white rounded-xl disabled:opacity-30">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
               </svg>
@@ -118,6 +124,43 @@
           </div>
         </div>
       </section>
+    </div>
+
+    <!-- Profile Edit Modal -->
+    <div v-if="showProfileModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden">
+        <div class="p-8 space-y-6">
+          <div class="flex justify-between items-center">
+            <h3 class="text-2xl font-bold text-slate-800">프로필 편집</h3>
+            <button @click="showProfileModal = false" class="text-slate-400 hover:text-slate-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+
+          <div class="flex flex-col items-center gap-4">
+            <div class="w-24 h-24 rounded-full border-4 border-slate-50 shadow-inner overflow-hidden bg-primary-100 flex items-center justify-center">
+              <img v-if="profileEdit.profileImageUrl" :src="profileEdit.profileImageUrl" class="w-full h-full object-cover" />
+              <span v-else class="text-primary-700 font-bold text-3xl">{{ profileEdit.nickname?.charAt(0) }}</span>
+            </div>
+            <p class="text-xs text-slate-400 italic">ID: {{ user.username }}</p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1">닉네임</label>
+              <input v-model="profileEdit.nickname" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-500 outline-none transition-all" />
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-slate-700 mb-1">프로필 이미지 URL</label>
+              <input v-model="profileEdit.profileImageUrl" placeholder="https://..." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-500 outline-none transition-all" />
+            </div>
+          </div>
+
+          <button @click="updateProfile" :disabled="isUpdating" class="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl font-bold transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-primary-100">
+            {{ isUpdating ? '저장 중...' : '변경 내용 저장' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -130,24 +173,54 @@ import Stomp from 'stompjs'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const user = ref({ username: '', nickname: '' })
+const user = ref({ username: '', nickname: '', profileImageUrl: '' })
 const rooms = ref([])
 const currentRoom = ref(null)
 const messages = ref([])
 const newMessage = ref('')
 const messageBox = ref(null)
-const unreadCounts = ref({}) // 방별 안읽은 메시지 수 { roomId: count }
+const unreadCounts = ref({})
+
+// Profile Modal State
+const showProfileModal = ref(false)
+const isUpdating = ref(false)
+const profileEdit = ref({ nickname: '', profileImageUrl: '' })
 
 let stompClient = null
 let subscription = null
-let globalNotificationSub = null
+let isConnected = false
 
 const fetchUser = async () => {
   try {
     const res = await axios.get('/api/user/me')
     user.value = res.data
+    return res.data
   } catch (err) {
     router.push('/login')
+    throw err
+  }
+}
+
+const openProfileModal = () => {
+  profileEdit.value = { 
+    nickname: user.value.nickname, 
+    profileImageUrl: user.value.profileImageUrl || '' 
+  }
+  showProfileModal.value = true
+}
+
+const updateProfile = async () => {
+  if (!profileEdit.value.nickname.trim()) return
+  isUpdating.value = true
+  try {
+    await axios.put('/api/user/profile', profileEdit.value)
+    await fetchUser() 
+    showProfileModal.value = false
+    alert('프로필이 수정되었습니다.')
+  } catch (err) {
+    alert('프로필 수정 중 오류가 발생했습니다.')
+  } finally {
+    isUpdating.value = false
   }
 }
 
@@ -163,33 +236,26 @@ const connect = () => {
   stompClient = Stomp.over(socket)
   stompClient.debug = null
   stompClient.connect({}, (frame) => {
+    isConnected = true
     console.log('STOMP Connected')
-    
-    // 글로벌 알림 구독 시작
     subscribeGlobalNotifications()
+  }, (err) => {
+    console.error('STOMP Connection Error', err)
+    isConnected = false
+    // 재연결 로직 (선택사항)
+    setTimeout(connect, 5000)
   })
 }
 
-// 모든 방의 메시지 이벤트를 감지하여 알림을 처리하는 로직
 const subscribeGlobalNotifications = () => {
-  if (globalNotificationSub) globalNotificationSub.unsubscribe()
-  
-  globalNotificationSub = stompClient.subscribe('/sub/chat/all/notifications', (payload) => {
+  if (!stompClient) return
+  stompClient.subscribe('/sub/chat/all/notifications', (payload) => {
     const msg = JSON.parse(payload.body)
-    
-    // 본인이 보낸 메시지는 알림 제외
     if (msg.senderId === user.value.username) return
-
-    // 현재 보고 있지 않은 방의 메시지일 경우
     if (!currentRoom.value || currentRoom.value.roomId !== msg.roomId) {
-      // 1. 사이드바 안읽은 카운트 증가
       unreadCounts.value[msg.roomId] = (unreadCounts.value[msg.roomId] || 0) + 1
-      
-      // 2. 브라우저 알림 표시
       showBrowserNotification(msg)
-    } 
-    // 현재 보고 있는 방이지만 탭이 백그라운드일 경우 알림 표시
-    else if (document.hidden) {
+    } else if (document.hidden) {
       showBrowserNotification(msg)
     }
   })
@@ -198,10 +264,7 @@ const subscribeGlobalNotifications = () => {
 const showBrowserNotification = (msg) => {
   if (Notification.permission === 'granted') {
     const roomName = rooms.value.find(r => r.roomId === msg.roomId)?.name || '새 메시지'
-    new Notification(`[${roomName}] ${msg.sender}`, {
-      body: msg.message,
-      icon: '/favicon.ico'
-    })
+    new Notification(`[${roomName}] ${msg.sender}`, { body: msg.message })
   }
 }
 
@@ -211,43 +274,45 @@ const createRoom = async () => {
     try {
       await axios.post(`/chat/room?name=${encodeURIComponent(name)}`)
       fetchRooms()
-    } catch (err) {
-      console.error('Room creation failed', err)
-    }
+    } catch (err) {}
   }
 }
 
 const enterRoom = async (room) => {
+  console.log('Entering room:', room.name)
   if (currentRoom.value?.roomId === room.roomId) return
   
-  // 해당 방의 안읽은 카운트 초기화
+  // 상태 초기화
   unreadCounts.value[room.roomId] = 0
-  
-  if (subscription) subscription.unsubscribe()
+  if (subscription) {
+    subscription.unsubscribe()
+    subscription = null
+  }
   
   currentRoom.value = room
   messages.value = []
   
   try {
+    // 히스토리 로드
     const res = await axios.get(`/chat/room/${room.roomId}/messages`)
     messages.value = res.data.map(m => ({ ...m, type: 'TALK' }))
     
-    subscription = stompClient.subscribe(`/sub/chat/room/${room.roomId}`, (payload) => {
-      const msg = JSON.parse(payload.body)
-      
-      // 현재 방의 메시지인 경우 목록에 추가
-      if (msg.roomId === currentRoom.value?.roomId) {
-        messages.value.push(msg)
-        scrollToBottom()
-      }
-      
-      // 인원수 변경 등이 발생했을 때 목록 갱신
-      if (msg.type === 'ENTER' || msg.type === 'QUIT') fetchRooms()
-    })
+    if (isConnected && stompClient) {
+      // 구독 설정
+      subscription = stompClient.subscribe(`/sub/chat/room/${room.roomId}`, (payload) => {
+        const msg = JSON.parse(payload.body)
+        if (msg.roomId === currentRoom.value?.roomId) {
+          messages.value.push(msg)
+          scrollToBottom()
+        }
+        if (msg.type === 'ENTER' || msg.type === 'QUIT') fetchRooms()
+      })
 
-    stompClient.send('/pub/chat/message', {}, JSON.stringify({
-      type: 'ENTER', roomId: room.roomId, sender: user.value.nickname, senderId: user.value.username
-    }))
+      // 입장 메시지 전송
+      stompClient.send('/pub/chat/message', {}, JSON.stringify({
+        type: 'ENTER', roomId: room.roomId, sender: user.value.nickname, senderId: user.value.username
+      }))
+    }
     
     scrollToBottom()
   } catch (err) {
@@ -256,7 +321,7 @@ const enterRoom = async (room) => {
 }
 
 const sendMessage = () => {
-  if (!newMessage.value.trim() || !stompClient || !currentRoom.value) return
+  if (!newMessage.value.trim() || !isConnected || !stompClient || !currentRoom.value) return
   stompClient.send('/pub/chat/message', {}, JSON.stringify({
     type: 'TALK',
     roomId: currentRoom.value.roomId,
@@ -268,12 +333,15 @@ const sendMessage = () => {
 }
 
 const leaveRoom = () => {
-  if (stompClient && currentRoom.value) {
+  if (isConnected && stompClient && currentRoom.value) {
     stompClient.send('/pub/chat/message', {}, JSON.stringify({
       type: 'QUIT', roomId: currentRoom.value.roomId, sender: user.value.nickname, senderId: user.value.username
     }))
   }
-  if (subscription) subscription.unsubscribe()
+  if (subscription) {
+    subscription.unsubscribe()
+    subscription = null
+  }
   currentRoom.value = null
   messages.value = []
 }
@@ -294,14 +362,12 @@ const scrollToBottom = () => {
 }
 
 onMounted(async () => {
-  // 브라우저 알림 권한 요청
-  if (Notification.permission !== 'granted') {
-    Notification.requestPermission()
-  }
-
-  await fetchUser()
-  connect()
-  fetchRooms()
-  setInterval(fetchRooms, 5000)
+  if (Notification.permission !== 'granted') Notification.requestPermission()
+  try {
+    await fetchUser()
+    connect()
+    fetchRooms()
+    setInterval(fetchRooms, 5000)
+  } catch (err) {}
 })
 </script>

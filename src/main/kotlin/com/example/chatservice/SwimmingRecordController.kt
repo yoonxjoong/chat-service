@@ -34,27 +34,45 @@ class SwimmingRecordController(
         @AuthenticationPrincipal userDetails: UserDetails,
         @RequestBody dto: SwimmingRecordDto
     ): Map<String, String> {
+        // ... (기존 로직 유지)
         val member = memberRepository.findByUsername(userDetails.username) ?: throw RuntimeException("User not found")
-        
         val existingRecord = swimmingRecordRepository.findByMemberAndDate(member, dto.date)
-        
         if (existingRecord != null) {
             existingRecord.distance = dto.distance
             existingRecord.duration = dto.duration
             existingRecord.memo = dto.memo
             swimmingRecordRepository.save(existingRecord)
         } else {
-            val record = SwimmingRecord(
-                member = member,
-                date = dto.date,
-                distance = dto.distance,
-                duration = dto.duration,
-                memo = dto.memo
-            )
+            val record = SwimmingRecord(member = member, date = dto.date, distance = dto.distance, duration = dto.duration, memo = dto.memo)
             swimmingRecordRepository.save(record)
         }
-        
         return mapOf("message" to "기록이 저장되었습니다.")
+    }
+
+    @GetMapping("/stats/summary")
+    fun getStatsSummary(@AuthenticationPrincipal userDetails: UserDetails): Map<String, Any> {
+        val member = memberRepository.findByUsername(userDetails.username) ?: throw RuntimeException("User not found")
+        
+        // 최근 7일 데이터
+        val last7Days = (0..6).map { LocalDate.now().minusDays(it.toLong()) }.reversed()
+        val weeklyData = last7Days.map { date ->
+            val record = swimmingRecordRepository.findByMemberAndDate(member, date)
+            mapOf("date" to date.toString(), "distance" to (record?.distance ?: 0))
+        }
+
+        // 최근 6개월 데이터
+        val last6Months = (0..5).map { YearMonth.now().minusMonths(it.toLong()) }.reversed()
+        val monthlyData = last6Months.map { ym ->
+            val start = ym.atDay(1)
+            val end = ym.atEndOfMonth()
+            val totalDistance = swimmingRecordRepository.findAllByMemberAndDateBetween(member, start, end).sumOf { it.distance }
+            mapOf("month" to ym.toString(), "distance" to totalDistance)
+        }
+
+        return mapOf(
+            "weekly" to weeklyData,
+            "monthly" to monthlyData
+        )
     }
 }
 

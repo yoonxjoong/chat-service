@@ -9,7 +9,10 @@ import org.springframework.security.crypto.password.PasswordEncoder
 @SpringBootApplication
 class ChatServiceApplication {
     @Bean
-    fun initData(memberRepository: MemberRepository, passwordEncoder: PasswordEncoder) = CommandLineRunner {
+    fun initData(
+        memberRepository: MemberRepository, 
+        passwordEncoder: PasswordEncoder
+    ) = CommandLineRunner {
         if (memberRepository.findByUsername("user1") == null) {
             memberRepository.save(Member(
                 username = "user1",

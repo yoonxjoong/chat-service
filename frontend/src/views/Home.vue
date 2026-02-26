@@ -11,6 +11,7 @@
         </div>
         <div class="flex gap-1 bg-slate-100 p-1 rounded-xl">
           <router-link to="/" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all" :class="$route.path === '/' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'">대시보드</router-link>
+          <router-link to="/stats" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all" :class="$route.path === '/stats' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'">통계</router-link>
           <router-link to="/chat" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all" :class="$route.path === '/chat' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'">채팅</router-link>
         </div>
       </div>

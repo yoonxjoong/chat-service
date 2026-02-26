@@ -32,13 +32,11 @@ class SecurityConfig {
             .formLogin { login ->
                 login
                     .loginProcessingUrl("/api/member/login")
-                    // 로그인 성공 시 JSON 반환
                     .successHandler { _, response, _ ->
                         response.status = HttpServletResponse.SC_OK
                         response.contentType = "application/json"
                         response.writer.write("{\"message\":\"success\"}")
                     }
-                    // 로그인 실패 시 JSON 반환
                     .failureHandler { _, response, _ ->
                         response.status = HttpServletResponse.SC_UNAUTHORIZED
                         response.contentType = "application/json"
@@ -49,7 +47,6 @@ class SecurityConfig {
             .logout { logout ->
                 logout
                     .logoutUrl("/api/member/logout")
-                    // 로그아웃 성공 시 JSON 반환
                     .logoutSuccessHandler { _, response, _ ->
                         response.status = HttpServletResponse.SC_OK
                         response.contentType = "application/json"

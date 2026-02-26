@@ -8,7 +8,13 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
           </svg>
         </div>
-        <h1 class="text-xl font-bold text-slate-800 tracking-tight">Gemini Chat</h1>
+        <h1 class="text-xl font-bold text-slate-800 tracking-tight mr-4">Gemini Chat</h1>
+        
+        <div class="hidden md:flex gap-1 bg-slate-100 p-1 rounded-xl">
+          <router-link to="/" class="px-4 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all">대시보드</router-link>
+          <router-link to="/stats" class="px-4 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-all">통계</router-link>
+          <router-link to="/chat" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-white text-primary-600 shadow-sm transition-all">채팅</router-link>
+        </div>
       </div>
       
       <div class="flex items-center gap-4">

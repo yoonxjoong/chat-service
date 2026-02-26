@@ -53,14 +53,13 @@
 </head>
 <body>
 
-    <div class="header">Chat Service <span id="current-user-display"></span></div>
+    <div class="header">
+        Chat Service <span id="current-user-display"></span>
+        <button onclick="location.href='/logout'" style="background-color: #f8f9fa; color: #333; font-size: 0.7rem; padding: 4px 10px; margin-left: 10px;">로그아웃</button>
+    </div>
 
-    <div id="setup-overlay">
-        <div class="setup-box">
-            <h2>사용자 설정</h2>
-            <input type="text" id="username-input" placeholder="사용할 닉네임을 입력하세요" />
-            <button onclick="startApp()">접속하기</button>
-        </div>
+    <div id="setup-overlay" style="display: none;">
+        <!-- 보안 적용으로 사용하지 않음 -->
     </div>
 
     <div class="main-container">
@@ -94,16 +93,27 @@
         let currentRoomId = null;
         let subscription = null;
 
+        // 페이지 로드 시 사용자 정보 확인
+        window.onload = async function() {
+            try {
+                const response = await fetch('/api/user/me');
+                if (response.ok) {
+                    const user = await response.json();
+                    username = user.nickname; // 화면 표시 및 채팅 발신 시 닉네임 사용
+                    document.getElementById('current-user-display').innerText = `(${username})`;
+                    connect();
+                    loadRooms();
+                } else {
+                    location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Login check failed:', error);
+                location.href = '/login';
+            }
+        };
+
         function startApp() {
-            const input = document.getElementById('username-input');
-            if (!input.value.trim()) return;
-            
-            username = input.value.trim();
-            document.getElementById('setup-overlay').style.display = 'none';
-            document.getElementById('current-user-display').innerText = `(${username})`;
-            
-            connect();
-            loadRooms();
+            // 더 이상 수동 시작하지 않음
         }
 
         function connect() {
@@ -248,27 +258,34 @@
         function showGreeting(message, isHistory = false) {
             const container = document.getElementById('message-container');
             
-            // 시스템 메시지 처리 및 상단 타이틀 갱신 (과거 내역이 아닐 때만)
+            // 시스템 메시지 처리 (입장/퇴장)
             if (!isHistory && (message.type === 'ENTER' || message.type === 'QUIT')) {
                 const div = document.createElement('div');
                 div.className = 'system-message';
                 div.innerText = message.message;
                 container.appendChild(div);
                 
-                // 현재 방 타이틀 인원수 업데이트
                 if (currentRoomId === message.roomId) {
-                    const roomName = document.querySelector('.room-item.active .room-name').innerText;
-                    document.getElementById('active-room-title').innerText = `${roomName} (${message.userCount}명 참여 중)`;
+                    const activeRoomItem = document.querySelector('.room-item.active .room-name');
+                    if (activeRoomItem) {
+                        const roomName = activeRoomItem.innerText;
+                        document.getElementById('active-room-title').innerText = `${roomName} (${message.userCount}명 참여 중)`;
+                    }
                 }
-                
-                loadRooms(); // 목록의 인원수도 함께 갱신
-            } else if (message.type === 'TALK') {
-                const isMine = message.sender === username;
+                loadRooms();
+            } 
+            // 일반 대화 메시지 처리
+            else if (message.type === 'TALK' || isHistory) {
+                // 본인 확인 (trim 추가로 공백 방지)
+                const isMine = message.sender.trim() === username.trim();
                 const div = document.createElement('div');
                 div.className = `message ${isMine ? 'mine' : 'others'}`;
                 
+                // 본인 메시지일 경우 이름을 표시하지 않음
+                const senderHtml = isMine ? '' : `<div class="message-sender">${message.sender}</div>`;
+                
                 div.innerHTML = `
-                    <div class="message-sender">${isMine ? '' : message.sender}</div>
+                    ${senderHtml}
                     <div class="message-bubble">${message.message}</div>
                 `;
                 container.appendChild(div);

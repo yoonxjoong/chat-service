@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller
 @Controller
 class ChatController(
     private val redisPublisher: RedisPublisher,
+    private val kafkaProducer: KafkaProducer,
     private val channelTopic: ChannelTopic,
     private val chatRoomRepository: ChatRoomRepository
 ) {
@@ -21,7 +22,6 @@ class ChatController(
         if (message.type == MessageType.ENTER) {
             val chatRoom = chatRoomRepository.findRoomById(message.roomId)
             if (chatRoom != null) {
-                // 세션에 정보 저장 (연결 끊김 시 사용)
                 attributes["roomId"] = message.roomId
                 attributes["sender"] = message.sender
                 
@@ -41,6 +41,12 @@ class ChatController(
             )
         }
         
+        // 실시간 전달을 위해 Redis로 발행
         redisPublisher.publish(channelTopic, updatedMessage)
+        
+        // 비동기 저장을 위해 Kafka로 전송 (TALK 타입만 전송하거나 전체 전송 가능)
+        if (updatedMessage.type == MessageType.TALK) {
+            kafkaProducer.send(updatedMessage)
+        }
     }
 }

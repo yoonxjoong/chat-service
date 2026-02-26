@@ -13,6 +13,7 @@ class ChatMessageEntity(
     val type: String = "",
     val roomId: String = "",
     val sender: String = "",
+    val senderId: String = "",
     
     @Column(columnDefinition = "TEXT")
     val message: String = "",

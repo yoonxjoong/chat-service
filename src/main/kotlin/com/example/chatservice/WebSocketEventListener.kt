@@ -20,18 +20,20 @@ class WebSocketEventListener(
         // 세션 속성에서 저장해둔 정보 추출
         val roomId = headerAccessor.sessionAttributes?.get("roomId") as? String
         val sender = headerAccessor.sessionAttributes?.get("sender") as? String
+        val senderId = headerAccessor.sessionAttributes?.get("senderId") as? String
 
-        if (roomId != null && sender != null) {
-            println("Disconnected : $sender from $roomId")
+        if (roomId != null && sender != null && senderId != null) {
+            println("Disconnected : $sender($senderId) from $roomId")
 
-            // 리포지토리에서 유저 제거
-            chatRoomRepository.removeUser(roomId, sender)
+            // 리포지토리에서 유저 제거 (ID 기준)
+            chatRoomRepository.removeUser(roomId, senderId)
             
             // 퇴장 메시지 브로드캐스트
             val chatMessage = ChatMessage(
                 type = MessageType.QUIT,
                 roomId = roomId,
                 sender = sender,
+                senderId = senderId,
                 message = "${sender}님이 퇴장하셨습니다.",
                 userCount = chatRoomRepository.getUserCount(roomId)
             )

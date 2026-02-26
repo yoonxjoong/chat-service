@@ -15,6 +15,7 @@ class KafkaConsumer(
                 type = message.type.name,
                 roomId = message.roomId,
                 sender = message.sender,
+                senderId = message.senderId,
                 message = message.message
             )
             chatMessageDbRepository.save(entity)

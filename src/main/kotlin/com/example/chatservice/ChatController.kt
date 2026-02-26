@@ -16,17 +16,19 @@ class ChatController(
      * websocket "/pub/chat/message"로 들어오는 메시징을 처리한다.
      */
     @MessageMapping("/chat/message")
-    fun message(message: ChatMessage, @Header("simpSessionAttributes") attributes: MutableMap<String, Any>) {
-        var updatedMessage = message
+    fun message(message: ChatMessage, @Header("simpSessionAttributes") attributes: MutableMap<String, Any>, principal: java.security.Principal) {
+        val loginId = principal.name // 고유 ID
+        var updatedMessage = message.copy(senderId = loginId)
 
         if (message.type == MessageType.ENTER) {
             val chatRoom = chatRoomRepository.findRoomById(message.roomId)
             if (chatRoom != null) {
                 attributes["roomId"] = message.roomId
                 attributes["sender"] = message.sender
+                attributes["senderId"] = loginId
                 
-                chatRoomRepository.addUser(message.roomId, message.sender)
-                updatedMessage = message.copy(
+                chatRoomRepository.addUser(message.roomId, loginId) // ID로 관리
+                updatedMessage = updatedMessage.copy(
                     message = "${message.sender}님이 입장하셨습니다.",
                     userCount = chatRoomRepository.getUserCount(message.roomId)
                 )
@@ -34,8 +36,8 @@ class ChatController(
                 return
             }
         } else if (message.type == MessageType.QUIT) {
-            chatRoomRepository.removeUser(message.roomId, message.sender)
-            updatedMessage = message.copy(
+            chatRoomRepository.removeUser(message.roomId, loginId)
+            updatedMessage = updatedMessage.copy(
                 message = "${message.sender}님이 퇴장하셨습니다.",
                 userCount = chatRoomRepository.getUserCount(message.roomId)
             )

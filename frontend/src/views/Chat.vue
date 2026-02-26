@@ -3,35 +3,29 @@
     <AppHeader />
 
     <div class="flex-1 flex overflow-hidden">
-      <!-- Sidebar -->
-      <aside class="w-80 bg-white border-r border-slate-200 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-          <h2 class="font-bold text-slate-800">채팅방 목록</h2>
-          <button @click="createRoom" class="w-8 h-8 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-md">
-            <span class="text-xl">+</span>
-          </button>
+      <!-- Sidebar: Channel Switcher -->
+      <aside class="w-20 md:w-64 bg-white border-r border-slate-200 flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        <div class="p-6 border-b border-slate-100 hidden md:block">
+          <h2 class="font-black text-slate-800 tracking-tighter uppercase">Community</h2>
         </div>
-        <div class="flex-1 overflow-y-auto p-3 space-y-2">
+        <div class="flex-1 overflow-y-auto p-3 space-y-4">
           <div 
             v-for="room in rooms" :key="room.roomId"
             @click="enterRoom(room)"
-            :class="['group p-4 rounded-2xl cursor-pointer transition-all border border-transparent flex flex-col gap-1', 
-                     currentRoom?.roomId === room.roomId ? 'bg-primary-50 border-primary-100 shadow-sm' : 'hover:bg-slate-50 hover:border-slate-100']"
+            :class="['group relative p-4 rounded-2xl cursor-pointer transition-all border flex items-center gap-3', 
+                     currentRoom?.roomId === room.roomId ? 'bg-primary-600 border-primary-600 shadow-lg shadow-primary-100' : 'hover:bg-slate-50 border-transparent']"
           >
-            <div class="flex justify-between items-center">
-              <span :class="['font-bold truncate max-w-[150px]', currentRoom?.roomId === room.roomId ? 'text-primary-700' : 'text-slate-700']">
-                {{ room.name }}
-              </span>
-              <div class="flex items-center gap-2">
-                <span v-if="unreadCounts[room.roomId]" class="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full shadow-sm animate-bounce">
-                  {{ unreadCounts[room.roomId] }}
-                </span>
-                <span class="text-[10px] px-2 py-0.5 bg-green-100 text-green-600 rounded-full font-bold">
-                  {{ room.userCount }}명
-                </span>
-              </div>
+            <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0', currentRoom?.roomId === room.roomId ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500']">
+              {{ room.roomId === 'today-swim-room' ? '🏊' : '💬' }}
             </div>
-            <p class="text-xs text-slate-400 truncate">대화에 참여해보세요</p>
+            <div class="hidden md:flex flex-col overflow-hidden">
+              <span :class="['font-bold truncate', currentRoom?.roomId === room.roomId ? 'text-white' : 'text-slate-700']">{{ room.name }}</span>
+              <span :class="['text-[10px]', currentRoom?.roomId === room.roomId ? 'text-white/70' : 'text-slate-400']">{{ room.userCount }}명 참여 중</span>
+            </div>
+            <!-- Unread Badge -->
+            <span v-if="unreadCounts[room.roomId]" class="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-black rounded-full border-2 border-white">
+              {{ unreadCounts[room.roomId] }}
+            </span>
           </div>
         </div>
       </aside>
@@ -39,40 +33,79 @@
       <!-- Main Chat Area -->
       <section class="flex-1 flex flex-col bg-white relative">
         <div v-if="currentRoom" class="p-4 border-b border-slate-100 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-10">
-          <div class="flex flex-col">
-            <span class="font-bold text-slate-800">{{ currentRoom.name }}</span>
-            <span class="text-[10px] text-slate-400">참여 중</span>
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-xl">
+              {{ currentRoom.roomId === 'today-swim-room' ? '🏊' : '💬' }}
+            </div>
+            <div class="flex flex-col">
+              <span class="font-black text-slate-800 tracking-tight">{{ currentRoom.name }}</span>
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Live Channel</span>
+              </div>
+            </div>
           </div>
-          <button @click="leaveRoom" class="px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-50 rounded-lg">
-            방 나가기
+          
+          <!-- Today's Stats in Header (Only for today-swim-room) -->
+          <div v-if="currentRoom.roomId === 'today-swim-room'" class="hidden lg:flex items-center gap-6 px-6 py-2 bg-slate-50 rounded-2xl border border-slate-100">
+            <div class="flex flex-col items-center">
+              <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Today's Team Distance</span>
+              <span class="text-sm font-black text-primary-600">{{ todayTeamDistance.toLocaleString() }}{{ user.distanceUnit === 'YARD' ? 'yd' : 'm' }}</span>
+            </div>
+            <div class="w-px h-6 bg-slate-200"></div>
+            <div class="flex flex-col items-center">
+              <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Active Today</span>
+              <span class="text-sm font-black text-orange-500">{{ currentRoom.userCount }}명</span>
+            </div>
+          </div>
+
+          <button @click="leaveRoom" class="p-2 text-slate-300 hover:text-red-500 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-width="2" /></svg>
           </button>
         </div>
 
-        <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed" ref="messageBox">
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-[#F8FAFC]" ref="messageBox">
           <div v-if="!currentRoom" class="h-full flex flex-col items-center justify-center text-slate-300">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-            </svg>
-            <p class="font-medium">대화를 시작할 채팅방을 선택해 주세요</p>
+            <div class="w-24 h-24 bg-slate-100 rounded-[2rem] flex items-center justify-center text-4xl mb-6">👋</div>
+            <p class="font-black text-slate-800 text-xl tracking-tighter">함께 수영할 준비가 되셨나요?</p>
+            <p class="text-sm text-slate-400 mt-1">왼쪽 채널을 선택하여 대화를 시작해보세요.</p>
           </div>
 
           <template v-else>
             <div 
               v-for="(msg, idx) in messages" :key="idx"
-              :class="['flex flex-col max-w-[80%]', 
-                       msg.type === 'TALK' ? (msg.senderId === user.username ? 'ml-auto items-end' : 'mr-auto items-start') : 'mx-auto w-full items-center']"
+              :class="['flex flex-col max-w-[85%]', 
+                       (msg.senderId === 'system' || msg.type === 'ENTER' || msg.type === 'QUIT') ? 'mx-auto w-full items-center my-4' : (msg.senderId === user.username ? 'ml-auto items-end' : 'mr-auto items-start')]"
             >
-              <div v-if="msg.type === 'TALK'" class="flex flex-col gap-1 w-full" :class="msg.senderId === user.username ? 'items-end' : 'items-start'">
-                <span v-if="msg.senderId !== user.username" class="text-[11px] font-bold text-slate-500 ml-1">{{ msg.sender }}</span>
+              <!-- 1. Swimming Record Notification (Fancy Style) -->
+              <div v-if="msg.senderId === 'system'" class="flex flex-col items-center gap-2">
+                <div class="px-6 py-2 bg-white rounded-2xl border border-primary-100 shadow-sm flex items-center gap-3">
+                  <span class="text-lg">✨</span>
+                  <span class="text-xs font-black text-slate-700">{{ msg.message }}</span>
+                </div>
+              </div>
+
+              <!-- 2. Entry/Quit Message (Simple Style - Restored) -->
+              <div v-else-if="msg.type === 'ENTER' || msg.type === 'QUIT'" class="bg-slate-200/50 text-slate-500 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider">
+                {{ msg.message }}
+              </div>
+
+              <!-- 3. Regular Talk Message Style -->
+              <div v-else class="flex flex-col gap-1 w-full" :class="msg.senderId === user.username ? 'items-end' : 'items-start'">
+                <div v-if="msg.senderId !== user.username" class="flex items-center gap-2 mb-1 ml-1">
+                  <div class="w-6 h-6 rounded-lg bg-primary-100 flex items-center justify-center text-[10px] font-bold text-primary-700 uppercase">
+                    {{ msg.sender?.charAt(0) }}
+                  </div>
+                  <span class="text-[11px] font-black text-slate-500">{{ msg.sender }}</span>
+                </div>
                 <div 
-                  :class="['px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm', 
-                           msg.senderId === user.username ? 'bg-primary-600 text-white rounded-tr-none' : 'bg-slate-100 text-slate-700 rounded-tl-none']"
+                  :class="['px-4 py-3 rounded-2xl text-[13px] leading-relaxed shadow-sm transition-all', 
+                           msg.senderId === user.username 
+                            ? 'bg-primary-600 text-white rounded-tr-none hover:bg-primary-700' 
+                            : 'bg-white text-slate-700 border border-slate-100 rounded-tl-none hover:border-slate-200']"
                 >
                   {{ msg.message }}
                 </div>
-              </div>
-              <div v-else class="system-msg bg-slate-200/50 text-slate-500 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wider my-2">
-                {{ msg.message }}
               </div>
             </div>
           </template>
@@ -113,6 +146,7 @@ const messages = ref([])
 const newMessage = ref('')
 const messageBox = ref(null)
 const unreadCounts = ref({})
+const todayTeamDistance = ref(0)
 
 let stompClient = null
 let subscription = null
@@ -133,6 +167,17 @@ const fetchRooms = async () => {
   try {
     const res = await axios.get('/chat/rooms')
     rooms.value = res.data
+  } catch (err) {}
+}
+
+const fetchTodayTeamDistance = async () => {
+  try {
+    const res = await axios.get('/api/swimming/today-total')
+    let dist = res.data.totalDistance || 0
+    if (user.value.distanceUnit === 'YARD') {
+      dist = Math.round(dist * 1.09361)
+    }
+    todayTeamDistance.value = dist
   } catch (err) {}
 }
 
@@ -259,6 +304,8 @@ onMounted(async () => {
     }
 
     setInterval(fetchRooms, 5000)
+    setInterval(fetchTodayTeamDistance, 10000)
+    fetchTodayTeamDistance()
   } catch (err) {}
 })
 </script>

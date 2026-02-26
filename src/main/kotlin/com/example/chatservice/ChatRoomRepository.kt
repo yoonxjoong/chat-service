@@ -18,11 +18,19 @@ class ChatRoomRepository(private val redisTemplate: RedisTemplate<String, Any>) 
     @PostConstruct
     private fun init() {
         opsHashChatRoom = redisTemplate.opsForHash()
-        // '오늘의 수영' 고정 방이 없으면 생성 (ID: today-swim-room)
-        val roomId = "today-swim-room"
-        if (opsHashChatRoom.get(CHAT_ROOMS, roomId) == null) {
-            val todayRoom = ChatRoom(roomId = roomId, name = "오늘의 수영")
-            opsHashChatRoom.put(CHAT_ROOMS, roomId, todayRoom)
+        
+        // 고정 채널 목록 생성
+        val defaultRooms = mapOf(
+            "today-swim-room" to "🏊 오늘의 수영",
+            "general-chat" to "💬 자유 수다",
+            "swimming-tips" to "🛠 수영 꿀팁"
+        )
+
+        defaultRooms.forEach { (id, name) ->
+            if (opsHashChatRoom.get(CHAT_ROOMS, id) == null) {
+                val room = ChatRoom(roomId = id, name = name)
+                opsHashChatRoom.put(CHAT_ROOMS, id, room)
+            }
         }
     }
 

@@ -78,6 +78,7 @@ class SwimmingRecordController(
 
     @GetMapping("/stats/summary")
     fun getStatsSummary(@AuthenticationPrincipal userDetails: UserDetails): Map<String, Any> {
+        // ... (기존 코드 유지)
         val member = memberRepository.findByUsername(userDetails.username) ?: throw RuntimeException("User not found")
         
         // 최근 7일 데이터
@@ -100,6 +101,14 @@ class SwimmingRecordController(
             "weekly" to weeklyData,
             "monthly" to monthlyData
         )
+    }
+
+    @GetMapping("/today-total")
+    fun getTodayTotalDistance(): Map<String, Int> {
+        val today = LocalDate.now()
+        // 모든 멤버의 오늘 기록 합계 (단순 구현을 위해 전체 조회 후 합산)
+        val total = swimmingRecordRepository.findAll().filter { it.date == today }.sumOf { it.distance }
+        return mapOf("totalDistance" to total)
     }
 }
 

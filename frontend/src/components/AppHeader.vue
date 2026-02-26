@@ -93,6 +93,7 @@ const profileEdit = ref({ nickname: '', profileImageUrl: '' })
 const menuItems = [
   { path: '/', label: '대시보드' },
   { path: '/stats', label: '통계' },
+  { path: '/feed', label: '피드' },
   { path: '/chat', label: '채팅' },
   { path: '/settings', label: '설정' }
 ]

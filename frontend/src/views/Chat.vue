@@ -15,7 +15,7 @@
           <span class="text-sm font-bold text-slate-700">{{ user.nickname }}</span>
           <span class="text-xs text-slate-400">{{ user.username }}</span>
         </div>
-        <button @click="logout" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-cowhgdlors border border-transparent hover:border-red-100">
+        <button @click="logout" class="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100">
           로그아웃
         </button>
       </div>
@@ -34,16 +34,21 @@
           <div 
             v-for="room in rooms" :key="room.roomId"
             @click="enterRoom(room)"
-            :class="['group p-4 rounded-2xl cursor-pointer transition-all border border-transparent', 
+            :class="['group p-4 rounded-2xl cursor-pointer transition-all border border-transparent flex flex-col gap-1', 
                      currentRoom?.roomId === room.roomId ? 'bg-primary-50 border-primary-100 shadow-sm' : 'hover:bg-slate-50 hover:border-slate-100']"
           >
-            <div class="flex justify-between items-start mb-1">
-              <span :class="['font-bold truncate', currentRoom?.roomId === room.roomId ? 'text-primary-700' : 'text-slate-700']">
+            <div class="flex justify-between items-center">
+              <span :class="['font-bold truncate max-w-[150px]', currentRoom?.roomId === room.roomId ? 'text-primary-700' : 'text-slate-700']">
                 {{ room.name }}
               </span>
-              <span class="text-[10px] px-2 py-0.5 bg-green-100 text-green-600 rounded-full font-bold">
-                {{ room.userCount }}명
-              </span>
+              <div class="flex items-center gap-2">
+                <span v-if="unreadCounts[room.roomId]" class="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full shadow-sm animate-bounce">
+                  {{ unreadCounts[room.roomId] }}
+                </span>
+                <span class="text-[10px] px-2 py-0.5 bg-green-100 text-green-600 rounded-full font-bold">
+                  {{ room.userCount }}명
+                </span>
+              </div>
             </div>
             <p class="text-xs text-slate-400 truncate group-hover:text-slate-500">대화에 참여해보세요</p>
           </div>
@@ -52,6 +57,7 @@
 
       <!-- Main Chat Area -->
       <section class="flex-1 flex flex-col bg-white relative">
+        <!-- Chat Header -->
         <div v-if="currentRoom" class="p-4 border-b border-slate-100 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-10">
           <div class="flex flex-col">
             <span class="font-bold text-slate-800">{{ currentRoom.name }}</span>
@@ -62,7 +68,7 @@
           </button>
         </div>
 
-        <!-- Messages -->
+        <!-- Messages Container -->
         <div class="flex-1 overflow-y-auto p-6 space-y-6 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed" ref="messageBox">
           <div v-if="!currentRoom" class="h-full flex flex-col items-center justify-center text-slate-300">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mb-4 opacity-20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -93,7 +99,7 @@
           </template>
         </div>
 
-        <!-- Input -->
+        <!-- Input Area -->
         <div v-if="currentRoom" class="p-4 bg-white border-t border-slate-100">
           <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200 focus-within:border-primary-400 focus-within:ring-4 focus-within:ring-primary-50 transition-all">
             <input 
@@ -130,9 +136,11 @@ const currentRoom = ref(null)
 const messages = ref([])
 const newMessage = ref('')
 const messageBox = ref(null)
+const unreadCounts = ref({}) // 방별 안읽은 메시지 수 { roomId: count }
 
 let stompClient = null
 let subscription = null
+let globalNotificationSub = null
 
 const fetchUser = async () => {
   try {
@@ -153,22 +161,68 @@ const fetchRooms = async () => {
 const connect = () => {
   const socket = new SockJS('/ws-stomp')
   stompClient = Stomp.over(socket)
-  stompClient.debug = null // 디버그 로그 숨김
+  stompClient.debug = null
   stompClient.connect({}, (frame) => {
     console.log('STOMP Connected')
+    
+    // 글로벌 알림 구독 시작
+    subscribeGlobalNotifications()
   })
+}
+
+// 모든 방의 메시지 이벤트를 감지하여 알림을 처리하는 로직
+const subscribeGlobalNotifications = () => {
+  if (globalNotificationSub) globalNotificationSub.unsubscribe()
+  
+  globalNotificationSub = stompClient.subscribe('/sub/chat/all/notifications', (payload) => {
+    const msg = JSON.parse(payload.body)
+    
+    // 본인이 보낸 메시지는 알림 제외
+    if (msg.senderId === user.value.username) return
+
+    // 현재 보고 있지 않은 방의 메시지일 경우
+    if (!currentRoom.value || currentRoom.value.roomId !== msg.roomId) {
+      // 1. 사이드바 안읽은 카운트 증가
+      unreadCounts.value[msg.roomId] = (unreadCounts.value[msg.roomId] || 0) + 1
+      
+      // 2. 브라우저 알림 표시
+      showBrowserNotification(msg)
+    } 
+    // 현재 보고 있는 방이지만 탭이 백그라운드일 경우 알림 표시
+    else if (document.hidden) {
+      showBrowserNotification(msg)
+    }
+  })
+}
+
+const showBrowserNotification = (msg) => {
+  if (Notification.permission === 'granted') {
+    const roomName = rooms.value.find(r => r.roomId === msg.roomId)?.name || '새 메시지'
+    new Notification(`[${roomName}] ${msg.sender}`, {
+      body: msg.message,
+      icon: '/favicon.ico'
+    })
+  }
 }
 
 const createRoom = async () => {
   const name = prompt('생성할 채팅방 이름을 입력하세요:')
   if (name) {
-    await axios.post(`/chat/room?name=${encodeURIComponent(name)}`)
-    fetchRooms()
+    try {
+      await axios.post(`/chat/room?name=${encodeURIComponent(name)}`)
+      fetchRooms()
+    } catch (err) {
+      console.error('Room creation failed', err)
+    }
   }
 }
 
 const enterRoom = async (room) => {
   if (currentRoom.value?.roomId === room.roomId) return
+  
+  // 해당 방의 안읽은 카운트 초기화
+  unreadCounts.value[room.roomId] = 0
+  
   if (subscription) subscription.unsubscribe()
   
   currentRoom.value = room
@@ -180,14 +234,21 @@ const enterRoom = async (room) => {
     
     subscription = stompClient.subscribe(`/sub/chat/room/${room.roomId}`, (payload) => {
       const msg = JSON.parse(payload.body)
-      messages.value.push(msg)
+      
+      // 현재 방의 메시지인 경우 목록에 추가
+      if (msg.roomId === currentRoom.value?.roomId) {
+        messages.value.push(msg)
+        scrollToBottom()
+      }
+      
+      // 인원수 변경 등이 발생했을 때 목록 갱신
       if (msg.type === 'ENTER' || msg.type === 'QUIT') fetchRooms()
-      scrollToBottom()
     })
 
     stompClient.send('/pub/chat/message', {}, JSON.stringify({
       type: 'ENTER', roomId: room.roomId, sender: user.value.nickname, senderId: user.value.username
     }))
+    
     scrollToBottom()
   } catch (err) {
     console.error('Room entry failed', err)
@@ -195,7 +256,7 @@ const enterRoom = async (room) => {
 }
 
 const sendMessage = () => {
-  if (!newMessage.value.trim() || !stompClient) return
+  if (!newMessage.value.trim() || !stompClient || !currentRoom.value) return
   stompClient.send('/pub/chat/message', {}, JSON.stringify({
     type: 'TALK',
     roomId: currentRoom.value.roomId,
@@ -222,8 +283,6 @@ const logout = async () => {
     await axios.post('/api/member/logout')
     router.push('/login')
   } catch (err) {
-    console.error('Logout failed', err)
-    // 에러가 나더라도 클라이언트 상태를 지우고 이동
     router.push('/login')
   }
 }
@@ -235,6 +294,11 @@ const scrollToBottom = () => {
 }
 
 onMounted(async () => {
+  // 브라우저 알림 권한 요청
+  if (Notification.permission !== 'granted') {
+    Notification.requestPermission()
+  }
+
   await fetchUser()
   connect()
   fetchRooms()

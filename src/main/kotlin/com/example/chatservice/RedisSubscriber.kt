@@ -14,21 +14,22 @@ class RedisSubscriber(
     private val messagingTemplate: SimpMessageSendingOperations
 ) : MessageListener {
 
-    /**
-     * Redis에서 메시지가 발행(publish)되면 대기하고 있던 onMessage가 해당 메시지를 받아 처리한다.
-     */
     override fun onMessage(message: Message, pattern: ByteArray?) {
         try {
-            // redis에서 발행된 데이터를 받아 deserialize
             val publishMessage = redisTemplate.stringSerializer.deserialize(message.body)
-            
-            // ChatMessage 객채로 맵핑
             val roomMessage = objectMapper.readValue(publishMessage, ChatMessage::class.java)
             
-            // Websocket 구독자에게 채팅 메시지 Send
-            messagingTemplate.convertAndSend("/sub/chat/room/${roomMessage.roomId}", roomMessage)
+            if (roomMessage != null) {
+                // 1. 해당 채팅방 구독자에게 메시지 전송
+                messagingTemplate.convertAndSend("/sub/chat/room/${roomMessage.roomId}", roomMessage)
+                
+                // 2. 글로벌 알림 토픽으로 전송 (알림 및 안읽은 메시지 체크용)
+                if (roomMessage.type == MessageType.TALK) {
+                    messagingTemplate.convertAndSend("/sub/chat/all/notifications", roomMessage)
+                }
+            }
         } catch (e: Exception) {
-            println("Exception: ${e.message}")
+            println("RedisSubscriber Exception: ${e.message}")
         }
     }
 }

@@ -1,30 +1,6 @@
 <template>
   <div class="min-h-screen bg-slate-50 flex flex-col">
-    <!-- Navbar -->
-    <nav class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-20">
-      <div class="flex items-center gap-8">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center text-white shadow-md">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" stroke-width="2" /></svg>
-          </div>
-          <h1 class="text-xl font-black text-slate-800 tracking-tighter italic">SWIM<span class="text-primary-600">RECORD</span></h1>
-        </div>
-        <div class="flex gap-1 bg-slate-100 p-1 rounded-xl">
-          <router-link to="/" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all" :class="$route.path === '/' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'">대시보드</router-link>
-          <router-link to="/stats" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all" :class="$route.path === '/stats' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'">통계</router-link>
-          <router-link to="/chat" class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all" :class="$route.path === '/chat' ? 'bg-white text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'">채팅</router-link>
-        </div>
-      </div>
-      <div class="flex items-center gap-4">
-        <div class="flex flex-col items-end">
-          <span class="text-xs font-black text-slate-700">{{ user.nickname }}님</span>
-          <span class="text-[10px] text-green-500 font-bold">오늘도 열수! 🏊‍♂️</span>
-        </div>
-        <button @click="logout" class="p-2 hover:bg-red-50 text-slate-300 hover:text-red-500 rounded-lg transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-width="2" /></svg>
-        </button>
-      </div>
-    </nav>
+    <AppHeader />
 
     <!-- Main Content -->
     <main class="flex-1 p-6 max-w-6xl mx-auto w-full space-y-6">
@@ -146,6 +122,7 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import AppHeader from '../components/AppHeader.vue'
 
 const router = useRouter()
 const user = ref({ nickname: '' })
@@ -270,15 +247,6 @@ const saveRecord = async () => {
   } catch (err) {
     console.error('Save failed', err)
     alert('기록 저장 중 오류가 발생했습니다.')
-  }
-}
-
-const logout = async () => {
-  try {
-    await axios.post('/api/member/logout')
-    router.push('/login')
-  } catch (err) {
-    router.push('/login')
   }
 }
 

@@ -32,6 +32,15 @@ class UserController(private val memberRepository: MemberRepository) {
         
         return mapOf("message" to "프로필이 수정되었습니다.")
     }
+
+    @DeleteMapping("/withdraw")
+    fun withdraw(@AuthenticationPrincipal userDetails: UserDetails): Map<String, String> {
+        val member = memberRepository.findByUsername(userDetails.username)
+            ?: throw RuntimeException("User not found")
+        
+        memberRepository.delete(member)
+        return mapOf("message" to "회원 탈퇴가 완료되었습니다.")
+    }
 }
 
 data class ProfileUpdateDto(

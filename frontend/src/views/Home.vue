@@ -29,27 +29,6 @@
         </div>
       </div>
 
-      <!-- Today's Chat Banner -->
-      <div 
-        @click="goToTodayChat"
-        :class="['p-6 rounded-3xl flex items-center justify-between cursor-pointer transition-all active:scale-[0.98] shadow-lg', 
-                 hasTodayRecord ? 'bg-gradient-to-r from-blue-600 to-indigo-500 text-white shadow-blue-100' : 'bg-slate-100 text-slate-400 grayscale opacity-60 pointer-events-none']"
-      >
-        <div class="flex items-center gap-4">
-          <div :class="['w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-inner', hasTodayRecord ? 'bg-white/20' : 'bg-slate-200']">
-            💬
-          </div>
-          <div>
-            <h3 class="font-black text-lg leading-tight">오늘의 수영 채팅방</h3>
-            <p v-if="hasTodayRecord" class="text-xs font-bold text-white/80">오늘 수영한 멤버들과 대화해보세요!</p>
-            <p v-else class="text-xs font-bold">기록을 먼저 등록해야 참여할 수 있어요</p>
-          </div>
-        </div>
-        <div v-if="hasTodayRecord" class="bg-white/20 px-4 py-2 rounded-xl text-xs font-black tracking-widest uppercase">
-          참여하기
-        </div>
-      </div>
-
       <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 overflow-hidden border border-slate-100">
         <div class="p-8 flex justify-between items-center border-b border-slate-50">
           <div class="flex flex-col">

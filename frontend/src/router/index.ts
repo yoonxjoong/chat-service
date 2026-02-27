@@ -18,7 +18,7 @@ const routes = [
   { path: '/terms', component: TermsOfService },
   { path: '/login', component: Login },
   { path: '/register', component: Register },
-  { path: '/chat', component: Chat }
+  // { path: '/chat', component: Chat }
 ]
 
 const router = createRouter({

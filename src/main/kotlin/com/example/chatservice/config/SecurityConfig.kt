@@ -29,6 +29,13 @@ class SecurityConfig {
                     .requestMatchers("/chat/**", "/ws-stomp/**", "/api/user/me", "/api/swimming/**").authenticated()
                     .anyRequest().permitAll()
             }
+            .exceptionHandling { handling ->
+                handling.authenticationEntryPoint { _, response, _ ->
+                    response.status = HttpServletResponse.SC_UNAUTHORIZED
+                    response.contentType = "application/json"
+                    response.writer.write("{\"message\":\"Unauthorized\"}")
+                }
+            }
             .formLogin { login ->
                 login
                     .loginProcessingUrl("/api/member/login")

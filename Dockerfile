@@ -25,8 +25,5 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=backend-build /app/target/*.jar app.jar
 
-# 이미지 내부에서 업로드 폴더 생성
-RUN mkdir -p /app/uploads
-
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -17,7 +17,6 @@ class SwimmingRecordController(
 ) {
 
     @GetMapping("/records")
-    // ... (기존 코드 유지)
     fun getRecords(
         @AuthenticationPrincipal userDetails: UserDetails,
         @RequestParam year: Int,
@@ -28,7 +27,7 @@ class SwimmingRecordController(
         val end = YearMonth.of(year, month).atEndOfMonth()
         
         return swimmingRecordRepository.findAllByMemberAndDateBetween(member, start, end).map {
-            SwimmingRecordDto(it.id, it.date, it.distance, it.duration, it.memo, it.imageUrl)
+            SwimmingRecordDto(it.id, it.date, it.strokeType, it.distance, it.duration, it.memo, it.imageUrl)
         }
     }
 
@@ -38,7 +37,9 @@ class SwimmingRecordController(
         @RequestBody dto: SwimmingRecordDto
     ): Map<String, String> {
         val member = memberRepository.findByUsername(userDetails.username) ?: throw RuntimeException("User not found")
-        val existingRecord = swimmingRecordRepository.findByMemberAndDate(member, dto.date)
+        
+        val existingRecord = swimmingRecordRepository.findAllByMemberAndDate(member, dto.date)
+            .find { it.strokeType == dto.strokeType }
         
         if (existingRecord != null) {
             existingRecord.distance = dto.distance
@@ -50,6 +51,7 @@ class SwimmingRecordController(
             val record = SwimmingRecord(
                 member = member,
                 date = dto.date,
+                strokeType = dto.strokeType,
                 distance = dto.distance,
                 duration = dto.duration,
                 memo = dto.memo,
@@ -58,17 +60,26 @@ class SwimmingRecordController(
             swimmingRecordRepository.save(record)
         }
 
-        // 오늘 기록인 경우 채팅방에 알림 메시지 발송
         if (dto.date == LocalDate.now()) {
             val unit = if (member.distanceUnit == "YARD") "yd" else "m"
             val displayDistance = if (member.distanceUnit == "YARD") Math.round(dto.distance * 1.09361) else dto.distance
             
+            val strokeName = when(dto.strokeType) {
+                StrokeType.FREE -> "자유형"
+                StrokeType.BACK -> "배영"
+                StrokeType.BREAST -> "평영"
+                StrokeType.FLY -> "접영"
+                StrokeType.IM -> "개인혼영"
+                StrokeType.KICK -> "발차기"
+                else -> "수영"
+            }
+
             val systemMsg = ChatMessage(
                 type = MessageType.TALK,
                 roomId = "today-swim-room",
                 sender = "시스템",
                 senderId = "system",
-                message = "${member.nickname}님이 오늘 ${displayDistance}${unit} 수영을 완료했습니다! 🏊‍♂️"
+                message = "${member.nickname}님이 오늘 ${strokeName} ${displayDistance}${unit} 수영을 완료했습니다! 🏊‍♂️"
             )
             redisPublisher.publish(channelTopic, systemMsg)
         }
@@ -78,17 +89,14 @@ class SwimmingRecordController(
 
     @GetMapping("/stats/summary")
     fun getStatsSummary(@AuthenticationPrincipal userDetails: UserDetails): Map<String, Any> {
-        // ... (기존 코드 유지)
         val member = memberRepository.findByUsername(userDetails.username) ?: throw RuntimeException("User not found")
         
-        // 최근 7일 데이터
         val last7Days = (0..6).map { LocalDate.now().minusDays(it.toLong()) }.reversed()
         val weeklyData = last7Days.map { date ->
-            val record = swimmingRecordRepository.findByMemberAndDate(member, date)
-            mapOf("date" to date.toString(), "distance" to (record?.distance ?: 0))
+            val totalDistance = swimmingRecordRepository.findAllByMemberAndDate(member, date).sumOf { it.distance }
+            mapOf("date" to date.toString(), "distance" to totalDistance)
         }
 
-        // 최근 6개월 데이터
         val last6Months = (0..5).map { YearMonth.now().minusMonths(it.toLong()) }.reversed()
         val monthlyData = last6Months.map { ym ->
             val start = ym.atDay(1)
@@ -103,12 +111,20 @@ class SwimmingRecordController(
         )
     }
 
-    @GetMapping("/today-total")
-    fun getTodayTotalDistance(): Map<String, Int> {
-        val today = LocalDate.now()
-        // 모든 멤버의 오늘 기록 합계 (단순 구현을 위해 전체 조회 후 합산)
-        val total = swimmingRecordRepository.findAll().filter { it.date == today }.sumOf { it.distance }
-        return mapOf("totalDistance" to total)
+    @DeleteMapping("/record/{id}")
+    fun deleteRecord(
+        @AuthenticationPrincipal userDetails: UserDetails,
+        @PathVariable id: Long
+    ): Map<String, String> {
+        val member = memberRepository.findByUsername(userDetails.username) ?: throw RuntimeException("User not found")
+        val record = swimmingRecordRepository.findById(id).orElseThrow { RuntimeException("Record not found") }
+        
+        if (record.member?.id != member.id) {
+            throw RuntimeException("Access denied")
+        }
+        
+        swimmingRecordRepository.delete(record)
+        return mapOf("message" to "기록이 삭제되었습니다.")
     }
 }
 
@@ -116,6 +132,7 @@ data class SwimmingRecordDto(
     val id: Long? = null,
     @JsonFormat(pattern = "yyyy-MM-dd")
     val date: LocalDate = LocalDate.now(),
+    val strokeType: StrokeType = StrokeType.FREE,
     val distance: Int = 0,
     val duration: Int = 0,
     val memo: String? = "",

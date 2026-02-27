@@ -8,13 +8,10 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/chatdb
       SPRING_DATA_REDIS_HOST: redis
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      UPLOAD_PATH: /app/uploads/
     depends_on:
       - postgres
       - redis
       - kafka
-    volumes:
-      - ./uploads:/app/uploads
 
   redis:
     image: redis:latest

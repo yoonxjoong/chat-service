@@ -1,171 +1,232 @@
 <template>
-  <div class="min-h-screen bg-slate-50 flex flex-col">
+  <div class="min-h-screen bg-slate-50 flex flex-col font-sans">
     <AppHeader />
 
     <!-- Main Content -->
     <main class="flex-1 p-6 max-w-6xl mx-auto w-full space-y-6">
       <!-- Monthly Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-          <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-xl">{{ unitLabel }}</div>
+        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-xl">
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+                <path d="M12 21.75c4.48 0 8.274-3.673 8.274-8.274 0-4.48-3.794-8.274-8.274-8.274-4.48 0-8.274 3.794-8.274 8.274 0 4.601 3.794 8.274 8.274 8.274zm0-15c3.673 0 6.774 3.1 6.774 6.726 0 3.626-3.1 6.726-6.774 6.726-3.674 0-6.774-3.1-6.774-6.726 0-3.626 3.1-6.726 6.774-6.726zM12 9a.75.75 0 01.75.75v3a.75.75 0 01-.75.75H9a.75.75 0 010-1.5h2.25V9.75A.75.75 0 0112 9z" />
+             </svg>
+          </div>
           <div>
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">이번 달 총 거리</p>
-            <p class="text-2xl font-black text-slate-800">{{ displayTotalDistance.toLocaleString() }}{{ unitLabel }}</p>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">이번 달 총 거리</p>
+            <p class="text-2xl font-black text-slate-800">{{ displayTotalDistance.toLocaleString() }}<span class="text-sm ml-1 font-bold text-slate-400">{{ unitLabel }}</span></p>
           </div>
         </div>
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-          <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 font-bold text-xl">min</div>
+        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 font-bold text-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+              <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z" clip-rule="evenodd" />
+            </svg>
+          </div>
           <div>
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">총 수영 시간</p>
-            <p class="text-2xl font-black text-slate-800">{{ monthlyTotalDuration }}분</p>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">총 수영 시간</p>
+            <p class="text-2xl font-black text-slate-800">{{ monthlyTotalDuration }}<span class="text-sm ml-1 font-bold text-slate-400">분</span></p>
           </div>
         </div>
-        <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
-          <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 font-bold text-xl">✔</div>
+        <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+          <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-600 font-bold text-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+              <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clip-rule="evenodd" />
+            </svg>
+          </div>
           <div>
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">출석 횟수</p>
-            <p class="text-2xl font-black text-slate-800">{{ records.length }}회</p>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">수영 간 날</p>
+            <p class="text-2xl font-black text-slate-800">{{ attendanceDaysCount }}<span class="text-sm ml-1 font-bold text-slate-400">일</span></p>
           </div>
         </div>
       </div>
 
-      <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/40 overflow-hidden border border-slate-100">
-        <div class="p-8 flex justify-between items-center border-b border-slate-50">
+      <!-- Calendar Card -->
+      <div class="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/30 overflow-hidden border border-slate-100">
+        <div class="p-8 flex justify-between items-center bg-white">
           <div class="flex flex-col">
-            <h2 class="text-3xl font-black text-slate-800 tracking-tighter">{{ currentYear }}년 {{ currentMonth }}월</h2>
-            <p class="text-sm text-slate-400 font-medium">수영 달력</p>
+            <h2 class="text-3xl font-black text-slate-800 tracking-tight">{{ currentYear }}년 {{ currentMonth }}월</h2>
+            <p class="text-sm text-slate-400 font-semibold italic">Swim Calendar</p>
           </div>
-          <div class="flex gap-3">
-            <button @click="prevMonth" class="w-10 h-10 flex items-center justify-center bg-slate-50 hover:bg-slate-100 rounded-xl transition-all">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="3" /></svg>
+          <div class="flex gap-2">
+            <button @click="prevMonth" class="w-12 h-12 flex items-center justify-center bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all">
+              <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2.5" /></svg>
             </button>
-            <button @click="nextMonth" class="w-10 h-10 flex items-center justify-center bg-slate-50 hover:bg-slate-100 rounded-xl transition-all">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="3" /></svg>
+            <button @click="nextMonth" class="w-12 h-12 flex items-center justify-center bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all">
+              <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2.5" /></svg>
             </button>
           </div>
         </div>
 
         <!-- Calendar Grid -->
-        <div class="grid grid-cols-7 border-b border-slate-50 bg-slate-50/30">
-          <div v-for="day in ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']" :key="day" class="py-3 text-[10px] font-black tracking-widest text-slate-400 text-center uppercase">{{ day }}</div>
+        <div class="grid grid-cols-7 bg-slate-50/50 border-t border-b border-slate-50">
+          <div v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="day" class="py-4 text-[11px] font-black tracking-widest text-slate-400 text-center uppercase">{{ day }}</div>
         </div>
         <div class="grid grid-cols-7">
           <div 
             v-for="(date, idx) in calendarDays" :key="idx"
-            :class="['group relative h-32 p-3 border-r border-b border-slate-50 transition-all cursor-pointer overflow-hidden', 
-                     date.isCurrentMonth ? 'bg-white hover:bg-slate-50/50' : 'bg-slate-50/20 opacity-40']"
+            :class="['group relative min-h-[140px] p-4 border-r border-b border-slate-50 transition-all cursor-pointer overflow-hidden', 
+                     date.isCurrentMonth ? 'bg-white hover:bg-slate-50/30' : 'bg-slate-50/20 opacity-30']"
             @click="openRecordModal(date)"
             :style="getCalendarCellStyle(date.fullDate)"
           >
-            <!-- 배경 이미지가 있을 때 정보 가독성을 위한 어두운 오버레이 -->
-            <div v-if="getRecordForDate(date.fullDate)?.imageUrl" class="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors"></div>
+            <!-- Overlay for better readability on image backgrounds -->
+            <div v-if="hasRecordOn(date.fullDate) && getFirstImageUrl(date.fullDate)" class="absolute inset-0 bg-slate-900/20 group-hover:bg-slate-900/10 transition-colors"></div>
 
             <span :class="['relative z-10 text-sm font-bold', 
-                          getRecordForDate(date.fullDate)?.imageUrl ? 'text-white drop-shadow-md' : (date.isCurrentMonth ? 'text-slate-700' : 'text-slate-300')]">
+                          (hasRecordOn(date.fullDate) && getFirstImageUrl(date.fullDate)) ? 'text-white drop-shadow-md' : (date.isCurrentMonth ? 'text-slate-800' : 'text-slate-300')]">
               {{ date.day }}
             </span>
             
-            <div v-if="getRecordForDate(date.fullDate)" class="relative z-10 mt-2 space-y-0.5">
-              <div :class="['h-1 w-6 rounded-full mb-1', getRecordForDate(date.fullDate)?.imageUrl ? 'bg-white shadow-sm' : 'bg-primary-500']"></div>
-              <p :class="['text-[11px] font-black tracking-tighter leading-none', getRecordForDate(date.fullDate)?.imageUrl ? 'text-white drop-shadow-md' : 'text-slate-800']">
-                {{ toDisplayDistance(getRecordForDate(date.fullDate).distance) }}{{ unitLabel }}
-              </p>
-              <p :class="['text-[9px] font-bold leading-none', getRecordForDate(date.fullDate)?.imageUrl ? 'text-white/90 drop-shadow-md' : 'text-slate-400']">
-                {{ getRecordForDate(date.fullDate).duration }}분
-              </p>
+            <div v-if="hasRecordOn(date.fullDate)" class="relative z-10 mt-2 space-y-1.5">
+              <div v-for="rec in getRecordsForDate(date.fullDate)" :key="rec.id" class="flex flex-col">
+                 <div class="flex items-center gap-1">
+                    <div :class="['w-1 h-3 rounded-full', getStrokeColor(rec.strokeType)]"></div>
+                    <span :class="['text-[10px] font-bold tracking-tighter', getFirstImageUrl(date.fullDate) ? 'text-white' : 'text-slate-500']">{{ getStrokeName(rec.strokeType) }}</span>
+                 </div>
+                 <p :class="['text-[12px] font-black ml-2', getFirstImageUrl(date.fullDate) ? 'text-white' : 'text-slate-800']">
+                    {{ toDisplayDistance(rec.distance) }}{{ unitLabel }}
+                 </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </main>
 
-    <!-- Modal -->
-    <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden p-8 space-y-6">
-        <div class="flex justify-between items-center">
-          <h3 class="text-xl font-black text-slate-800 tracking-tighter">{{ formattedSelectedDate }}</h3>
-          <button @click="showModal = false" class="text-slate-400 hover:text-slate-600">✕</button>
-        </div>
-
-        <div v-if="!isEditing && hasRecord" class="space-y-6">
-          <div v-if="recordForm.imageUrl" class="w-full h-40 rounded-2xl overflow-hidden border border-slate-100">
-            <img :src="recordForm.imageUrl" class="w-full h-full object-cover" />
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">DISTANCE</p>
-              <p class="text-2xl font-black text-primary-600">{{ toDisplayDistance(recordForm.distance) }}{{ unitLabel }}</p>
+    <!-- Detailed Record Modal -->
+    <transition name="fade">
+      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+        <div class="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+          
+          <!-- Modal Header -->
+          <div class="p-6 md:p-8 flex justify-between items-center border-b border-slate-100 flex-shrink-0">
+            <div class="flex flex-col">
+               <h3 class="text-2xl font-black text-slate-800 tracking-tight">{{ formattedSelectedDate }}</h3>
+               <p class="text-sm text-slate-400 font-bold">Swim Record Entry</p>
             </div>
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">DURATION</p>
-              <p class="text-2xl font-black text-orange-500">{{ recordForm.duration }}분</p>
-            </div>
+            <button @click="showModal = false" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 transition-colors">✕</button>
           </div>
-          <div v-if="recordForm.memo" class="bg-slate-50 p-4 rounded-2xl border border-slate-100 italic text-sm text-slate-600">"{{ recordForm.memo }}"</div>
-          <button @click="isEditing = true" class="w-full py-4 bg-slate-800 text-white rounded-2xl font-bold text-sm">수정하기</button>
-        </div>
 
-        <form v-else @submit.prevent="saveRecord" class="space-y-4">
-          <div class="space-y-2">
-            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-widest">인증 사진</label>
-            <div 
-              @click="triggerFile" 
-              class="w-full h-32 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 transition-all overflow-hidden relative"
-            >
-              <img v-if="previewUrl" :src="previewUrl" class="w-full h-full object-cover" />
-              <div v-else class="text-center">
-                <svg class="w-8 h-8 text-slate-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" /></svg>
-                <p class="text-[10px] font-bold text-slate-400">사진 업로드</p>
+          <!-- Modal Body (Scrollable) -->
+          <div class="p-6 md:p-8 overflow-y-auto space-y-8 flex-1">
+            
+            <!-- Existing Records List -->
+            <div v-if="getRecordsForDate(selectedDate).length > 0" class="space-y-4">
+               <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">오늘의 기록 리스트</h4>
+               <div v-for="rec in getRecordsForDate(selectedDate)" :key="rec.id" class="bg-slate-50 rounded-2xl p-4 flex justify-between items-center border border-slate-100">
+                  <div class="flex items-center gap-4">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-xs', getStrokeColor(rec.strokeType)]">
+                      {{ getStrokeShortName(rec.strokeType) }}
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold text-slate-800">{{ getStrokeName(rec.strokeType) }}</p>
+                      <p class="text-[11px] text-slate-500 font-medium">{{ rec.duration }}분 동안 수영</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-lg font-black text-blue-600">{{ toDisplayDistance(rec.distance) }}{{ unitLabel }}</p>
+                    <button @click="removeRecord(rec.id)" class="text-[10px] font-bold text-red-400 hover:text-red-600 transition-colors uppercase">삭제</button>
+                  </div>
+               </div>
+            </div>
+
+            <!-- New Record Form -->
+            <div class="space-y-6 bg-blue-50/30 p-6 rounded-[2rem] border border-blue-100/50">
+              <h4 class="text-xs font-black text-blue-600 uppercase tracking-widest text-center">기록 추가하기</h4>
+              
+              <!-- Stroke Selector -->
+              <div class="space-y-3">
+                <p class="text-xs font-bold text-slate-500 ml-1">영법 선택</p>
+                <div class="grid grid-cols-4 gap-2">
+                  <button 
+                    v-for="stroke in strokeTypes" :key="stroke.value"
+                    @click="recordForm.strokeType = stroke.value"
+                    :class="['py-3 rounded-xl text-xs font-bold transition-all border shadow-sm', 
+                             recordForm.strokeType === stroke.value ? 'bg-blue-600 text-white border-blue-600 scale-105 shadow-blue-200' : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300']"
+                  >
+                    {{ stroke.label }}
+                  </button>
+                </div>
               </div>
-              <input type="file" ref="fileInput" class="hidden" accept="image/*" @change="onFileChange" />
-            </div>
-          </div>
 
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-widest">DISTANCE ({{ unitLabel }})</label>
-              <input v-model.number="displayInputDistance" type="number" required class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 font-bold" />
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-widest">DURATION (min)</label>
-              <input v-model.number="recordForm.duration" type="number" required class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 font-bold" />
+              <!-- Distance Quick Input -->
+              <div class="space-y-3">
+                <p class="text-xs font-bold text-slate-500 ml-1">거리 입력 ({{ unitLabel }})</p>
+                <div class="flex items-center gap-3">
+                  <input v-model.number="displayInputDistance" type="number" class="flex-1 px-5 py-4 rounded-2xl border border-slate-200 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 font-black text-xl bg-white" />
+                </div>
+                <div class="grid grid-cols-4 gap-2">
+                  <button v-for="d in [25, 50, 100, 500]" :key="d" @click="addDistance(d)" class="py-2 bg-white rounded-xl text-xs font-black text-slate-600 border border-slate-200 hover:bg-blue-50 hover:border-blue-300 transition-all">+{{ d }}</button>
+                  <button @click="displayInputDistance = 0" class="py-2 bg-slate-100 rounded-xl text-xs font-black text-slate-400 border border-slate-200 hover:bg-white transition-all">Reset</button>
+                </div>
+              </div>
+
+              <!-- Duration & Memo -->
+              <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 ml-1">시간 (분)</label>
+                <input v-model.number="recordForm.duration" type="number" class="w-full px-5 py-3.5 rounded-2xl border border-slate-200 outline-none focus:border-blue-500 bg-white font-bold" />
+              </div>
+              
+              <div class="space-y-2">
+                <label class="text-xs font-bold text-slate-500 ml-1">메모</label>
+                <textarea v-model="recordForm.memo" placeholder="수영에 대한 소감을 남겨주세요." class="w-full px-5 py-3.5 rounded-2xl border border-slate-200 outline-none focus:border-blue-500 bg-white h-24 resize-none text-sm"></textarea>
+              </div>
+
+              <button @click="saveRecord" :disabled="isUploading" class="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl font-black text-lg shadow-xl shadow-blue-500/30 transition-all active:scale-[0.98] disabled:opacity-50 mt-4">
+                {{ isUploading ? '기록 저장 중...' : '기록 추가하기' }}
+              </button>
             </div>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-widest">MEMO</label>
-            <textarea v-model="recordForm.memo" class="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:border-primary-500 h-20 resize-none"></textarea>
-          </div>
-          <button type="submit" :disabled="isUploading" class="w-full py-4 bg-primary-600 text-white rounded-2xl font-bold transition-all active:scale-95 shadow-lg disabled:opacity-50">
-            {{ isUploading ? '저장 중...' : '저장하기' }}
-          </button>
-        </form>
+        </div>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import AppHeader from '../components/AppHeader.vue'
 
 const router = useRouter()
+const route = useRoute()
 const user = ref({ nickname: '', distanceUnit: 'METER' })
 const records = ref([])
 const showModal = ref(false)
-const isEditing = ref(false)
-const hasRecord = ref(false)
 const selectedDate = ref('')
-const recordForm = ref({ distance: 0, duration: 0, memo: '', imageUrl: '' })
+const recordForm = ref({ strokeType: 'FREE', distance: 0, duration: 0, memo: '', imageUrl: '' })
 const displayInputDistance = ref(0)
 
-const fileInput = ref(null)
-const previewUrl = ref('')
-const selectedFile = ref(null)
 const isUploading = ref(false)
 
 const M_TO_YD = 1.09361
+
+const strokeTypes = [
+  { value: 'FREE', label: '자유형', short: '자' },
+  { value: 'BACK', label: '배영', short: '배' },
+  { value: 'BREAST', label: '평영', short: '평' },
+  { value: 'FLY', label: '접영', short: '접' },
+  { value: 'IM', label: '개인혼영', short: '혼' },
+  { value: 'KICK', label: '발차기', short: '킥' },
+  { value: 'MIXED', label: '기타', short: '기' }
+]
+
+const getStrokeName = (val) => strokeTypes.find(s => s.value === val)?.label || '수영'
+const getStrokeShortName = (val) => strokeTypes.find(s => s.value === val)?.short || '수'
+const getStrokeColor = (val) => {
+  const colors = {
+    FREE: 'bg-blue-500',
+    BACK: 'bg-sky-400',
+    BREAST: 'bg-amber-500',
+    FLY: 'bg-indigo-600',
+    IM: 'bg-purple-600',
+    KICK: 'bg-emerald-500',
+    MIXED: 'bg-slate-500'
+  }
+  return colors[val] || 'bg-slate-400'
+}
 
 const now = new Date()
 const currentYear = ref(now.getFullYear())
@@ -181,6 +242,10 @@ const toDisplayDistance = (m) => {
 const toDbDistance = (val) => {
   if (user.value.distanceUnit === 'YARD') return Math.round(val / M_TO_YD)
   return val
+}
+
+const addDistance = (d) => {
+  displayInputDistance.value = (Number(displayInputDistance.value) || 0) + d
 }
 
 const fetchUser = async () => {
@@ -205,16 +270,10 @@ const displayTotalDistance = computed(() => {
   return toDisplayDistance(totalMeters)
 })
 
-const hasTodayRecord = computed(() => {
-  const todayStr = new Date().toISOString().split('T')[0]
-  return records.value.some(r => r.date === todayStr)
+const attendanceDaysCount = computed(() => {
+  const uniqueDays = new Set(records.value.map(r => r.date))
+  return uniqueDays.size
 })
-
-const goToTodayChat = () => {
-  if (hasTodayRecord.value) {
-    router.push('/chat?roomId=today-swim-room')
-  }
-}
 
 const formattedSelectedDate = computed(() => {
   if (!selectedDate.value) return ''
@@ -222,13 +281,15 @@ const formattedSelectedDate = computed(() => {
   return `${y}년 ${parseInt(m)}월 ${parseInt(d)}일`
 })
 
-const getRecordForDate = (dateStr) => records.value.find(r => r.date === dateStr)
+const hasRecordOn = (dateStr) => records.value.some(r => r.date === dateStr)
+const getRecordsForDate = (dateStr) => records.value.filter(r => r.date === dateStr)
+const getFirstImageUrl = (dateStr) => getRecordsForDate(dateStr).find(r => r.imageUrl)?.imageUrl
 
 const getCalendarCellStyle = (dateStr) => {
-  const record = getRecordForDate(dateStr)
-  if (record?.imageUrl) {
+  const imageUrl = getFirstImageUrl(dateStr)
+  if (imageUrl) {
     return {
-      backgroundImage: `url(${record.imageUrl})`,
+      backgroundImage: `url(${imageUrl})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center'
     }
@@ -276,62 +337,41 @@ const nextMonth = () => {
 
 const openRecordModal = (date) => {
   selectedDate.value = date.fullDate
-  const existing = getRecordForDate(date.fullDate)
-  selectedFile.value = null
-  if (existing) {
-    recordForm.value = { ...existing }
-    displayInputDistance.value = toDisplayDistance(existing.distance)
-    previewUrl.value = existing.imageUrl || ''
-    hasRecord.value = true
-    isEditing.value = false
-  } else {
-    recordForm.value = { distance: 0, duration: 0, memo: '', imageUrl: '' }
-    displayInputDistance.value = 0
-    previewUrl.value = ''
-    hasRecord.value = false
-    isEditing.value = true
-  }
+  displayInputDistance.value = 0
+  recordForm.value = { strokeType: 'FREE', distance: 0, duration: 0, memo: '', imageUrl: '' }
   showModal.value = true
 }
 
-const triggerFile = () => fileInput.value.click()
-
-const onFileChange = (e) => {
-  const file = e.target.files[0]
-  if (!file) return
-  selectedFile.value = file
-  previewUrl.value = URL.createObjectURL(file)
-}
-
 const saveRecord = async () => {
+  if (displayInputDistance.value <= 0) return
   isUploading.value = true
   try {
-    let finalImageUrl = recordForm.value.imageUrl
-
-    if (selectedFile.value) {
-      const formData = new FormData()
-      formData.append('file', selectedFile.value)
-      const uploadRes = await axios.post('/api/upload/image', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      finalImageUrl = uploadRes.data.url
-    }
-
     const payload = {
       date: selectedDate.value,
+      strokeType: recordForm.value.strokeType,
       distance: Number(toDbDistance(displayInputDistance.value)) || 0,
       duration: Number(recordForm.value.duration) || 0,
       memo: recordForm.value.memo || '',
-      imageUrl: finalImageUrl || null
+      imageUrl: null
     }
     await axios.post('/api/swimming/record', payload)
-    showModal.value = false
+    // 리셋 후 기록 다시 불러오기
+    displayInputDistance.value = 0
     await fetchRecords()
   } catch (err) {
-    console.error('Save error:', err.response?.data)
     alert('저장 중 오류가 발생했습니다.')
   } finally {
     isUploading.value = false
+  }
+}
+
+const removeRecord = async (id) => {
+  if (!confirm('정말 삭제하시겠습니까?')) return
+  try {
+    await axios.delete(`/api/swimming/record/${id}`)
+    await fetchRecords()
+  } catch (err) {
+    alert('삭제 실패')
   }
 }
 
@@ -340,3 +380,12 @@ onMounted(async () => {
   await fetchRecords()
 })
 </script>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+</style>

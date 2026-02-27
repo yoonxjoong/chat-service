@@ -54,27 +54,16 @@ class UserController(
         val member = memberRepository.findByUsername(userDetails.username)
             ?: throw RuntimeException("User not found")
         
-        // 1. 제거된 기능들의 잔재 데이터 삭제 (Native Query)
-        // 챌린지 참여 기록 삭제
-        entityManager.createNativeQuery("DELETE FROM challenge_participants WHERE member_id = :memberId")
-            .setParameter("memberId", member.id)
-            .executeUpdate()
-            
-        // 친구 관계 기록 삭제
-        entityManager.createNativeQuery("DELETE FROM friendships WHERE requester_id = :memberId OR receiver_id = :memberId")
-            .setParameter("memberId", member.id)
-            .executeUpdate()
-
-        // 2. 수영 기록 삭제
+        // 1. 수영 기록 삭제
         swimmingRecordRepository.deleteAllByMember(member)
 
-        // 3. 보안 컨텍스트 로그아웃
+        // 2. 보안 컨텍스트 로그아웃
         val auth = org.springframework.security.core.context.SecurityContextHolder.getContext().authentication
         if (auth != null) {
             SecurityContextLogoutHandler().logout(request, null, auth)
         }
 
-        // 4. 회원 삭제
+        // 3. 회원 삭제
         memberRepository.delete(member)
         
         return mapOf("message" to "회원 탈퇴가 완료되었습니다.")

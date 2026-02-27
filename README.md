@@ -27,3 +27,4 @@ Spring Boot, WebSocket, Redis를 활용한 실시간 채팅 서비스입니다.
 1. **Redis 실행**: `docker compose up -d`
 2. **애플리케이션 실행**: `./mvnw spring-boot:run`
 3. **통합 테스트 실행**: `./mvnw test`
+\n\n# CI/CD Test - Fri Feb 27 10:37:18 KST 2026

@@ -29,6 +29,6 @@ jobs:
       with:
         context: .
         push: true
-        tags: yoonxjoong/swim-record-app:latest
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/swim-record-app:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max

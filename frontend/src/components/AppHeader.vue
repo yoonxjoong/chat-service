@@ -74,8 +74,7 @@ const user = ref({ username: '', nickname: '', profileImageUrl: '' })
 const menuItems = [
   { path: '/', label: '대시보드' },
   { path: '/stats', label: '성장 리포트' },
-  { path: '/feed', label: '물옷 갤러리' },
-  { path: '/settings', label: '설정' }
+  { path: '/feed', label: '물옷 갤러리' }
 ]
 
 const activeClass = (path) => {

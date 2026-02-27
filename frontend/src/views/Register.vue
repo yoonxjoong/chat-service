@@ -1,78 +1,83 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
-    <div class="max-w-lg w-full bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-10 border border-slate-100 space-y-8">
-      <div class="text-center">
-        <h2 class="text-3xl font-extrabold text-primary-700 tracking-tight">회원가입</h2>
-        <p class="mt-2 text-sm text-slate-500">새로운 계정을 만들고 시작하세요</p>
+  <div class="min-h-screen flex items-center justify-center bg-slate-50 p-6 font-sans antialiased text-slate-900">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <!-- Top Section -->
+      <div class="p-8 md:p-10 text-center space-y-4 pb-6">
+        <h2 class="text-xl md:text-2xl font-black tracking-tight">회원가입</h2>
+        <p class="text-[11px] md:text-xs text-slate-400 font-bold uppercase tracking-[0.2em]">Create your account</p>
       </div>
 
-      <form class="space-y-5" @submit.prevent="handleRegister">
-        <!-- 아이디 중복 확인 -->
-        <div class="space-y-1">
-          <label class="block text-sm font-semibold text-slate-700">아이디</label>
-          <div class="flex gap-3">
+      <form class="p-8 md:p-10 pt-0 space-y-5" @submit.prevent="handleRegister">
+        <!-- ID Input -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Username</label>
+          <div class="flex gap-2">
             <input 
               v-model="form.username" type="text" required 
-              class="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none transition-all"
+              class="flex-1 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm font-bold text-slate-700 placeholder:text-slate-300"
               placeholder="아이디 입력"
               @input="isIdChecked = false"
             />
             <button 
               type="button" @click="checkDuplicate"
-              class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-sm transition-colors whitespace-nowrap"
+              class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold text-[11px] transition-all active:scale-95 whitespace-nowrap"
             >
               중복 확인
             </button>
           </div>
-          <p v-if="idMsg" :class="['text-xs mt-1 font-medium', idMsgType === 'success' ? 'text-green-600' : 'text-red-600']">
+          <p v-if="idMsg" :class="['text-[10px] ml-1 font-bold', idMsgType === 'success' ? 'text-green-500' : 'text-red-400']">
             {{ idMsg }}
           </p>
         </div>
 
-        <!-- 닉네임 -->
-        <div class="space-y-1">
-          <label class="block text-sm font-semibold text-slate-700">닉네임</label>
+        <!-- Nickname Input -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nickname</label>
           <input 
             v-model="form.nickname" type="text" required 
-            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none"
-            placeholder="채팅에서 사용할 이름"
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm font-bold text-slate-700 placeholder:text-slate-300"
+            placeholder="닉네임 입력"
           />
         </div>
 
-        <!-- 비밀번호 -->
-        <div class="space-y-1">
-          <label class="block text-sm font-semibold text-slate-700">비밀번호</label>
+        <!-- Password Input -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Password</label>
           <input 
             v-model="form.password" type="password" required 
-            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none"
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm font-bold text-slate-700 placeholder:text-slate-300"
             placeholder="비밀번호 입력"
           />
         </div>
 
-        <div class="space-y-1">
-          <label class="block text-sm font-semibold text-slate-700">비밀번호 확인</label>
+        <!-- Password Confirm -->
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Confirm Password</label>
           <input 
             v-model="form.passwordConfirm" type="password" required 
-            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-200 outline-none"
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm font-bold text-slate-700 placeholder:text-slate-300"
             placeholder="비밀번호 재입력"
           />
-          <p v-if="pwMsg" :class="['text-xs mt-1 font-medium', pwMsgType === 'success' ? 'text-green-600' : 'text-red-600']">
+          <p v-if="pwMsg" :class="['text-[10px] ml-1 font-bold', pwMsgType === 'success' ? 'text-green-500' : 'text-red-400']">
             {{ pwMsg }}
           </p>
         </div>
 
         <button 
           type="submit" :disabled="!isFormValid || loading"
-          class="w-full py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-200 transition-all active:scale-95 disabled:opacity-50 disabled:shadow-none mt-4"
+          class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-sm shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all active:scale-[0.98] disabled:opacity-30 mt-4"
         >
-          {{ loading ? '처리 중...' : '가입하기' }}
+          <div v-if="loading" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+          {{ loading ? '가입 중' : '가입하기' }}
         </button>
 
-        <div class="text-center text-sm">
-          <span class="text-slate-500">이미 계정이 있으신가요?</span>
-          <router-link to="/login" class="ml-2 font-bold text-primary-600 hover:text-primary-700 underline underline-offset-4 decoration-primary-200">
-            로그인
-          </router-link>
+        <div class="pt-4 text-center">
+          <p class="text-[11px] text-slate-400 font-medium">
+            이미 계정이 있으신가요?
+            <router-link to="/login" class="ml-1 font-bold text-blue-600 hover:text-blue-700 underline underline-offset-4">
+              로그인
+            </router-link>
+          </p>
         </div>
       </form>
     </div>
@@ -137,7 +142,6 @@ const handleRegister = async () => {
       nickname: form.value.nickname,
       password: form.value.password
     })
-    alert('회원가입이 완료되었습니다! 로그인해 주세요.')
     router.push('/login')
   } catch (err) {
     alert(err.response?.data?.message || '가입 중 오류가 발생했습니다.')

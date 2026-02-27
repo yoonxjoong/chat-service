@@ -2,11 +2,11 @@
   <div class="min-h-screen flex items-center justify-center bg-slate-50 px-4">
     <div class="max-w-md w-full bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-8 space-y-8 border border-slate-100">
       <div class="text-center">
-        <h2 class="text-3xl font-extrabold text-primary-700 tracking-tight">Gemini Chat</h2>
-        <p class="mt-2 text-sm text-slate-500">계정에 로그인하여 대화를 시작하세요</p>
+        <h2 class="text-3xl font-black text-slate-800 tracking-tighter italic uppercase">Swim<span class="text-primary-600">Record</span></h2>
+        <p class="mt-2 text-sm text-slate-400 font-bold">당신의 수영을 기록하고 공유하세요</p>
       </div>
 
-      <div v-if="error" class="bg-red-50 text-red-600 p-3 rounded-lg text-xs font-medium border border-red-100 animate-pulse">
+      <div v-if="error" class="bg-red-50 text-red-600 p-3 rounded-2xl text-xs font-bold border border-red-100">
         아이디 또는 비밀번호가 올바르지 않습니다.
       </div>
 
@@ -69,7 +69,7 @@ const handleLogin = async () => {
     await axios.post('/api/member/login', params, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     })
-    router.push('/chat')
+    router.push('/')
   } catch (err) {
     error.value = true
   } finally {

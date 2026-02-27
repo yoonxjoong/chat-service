@@ -1,107 +1,192 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-slate-50 p-6 font-sans antialiased text-slate-900">
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-      <!-- Top Branding -->
-      <div class="p-8 md:p-10 text-center space-y-4">
-        <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-900 text-white shadow-lg">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+  <div class="min-h-screen flex items-center justify-center bg-white p-6 font-sans antialiased text-slate-900">
+    <div class="max-w-sm w-full space-y-12">
+      <!-- Logo & Welcome -->
+      <div class="text-center space-y-4">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-900 text-white shadow-xl mb-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-7 h-7">
             <path d="M12 21.75c4.48 0 8.274-3.673 8.274-8.274 0-4.48-3.794-8.274-8.274-8.274-4.48 0-8.274 3.794-8.274 8.274 0 4.601 3.794 8.274 8.274 8.274zm0-15c3.673 0 6.774 3.1 6.774 6.726 0 3.626-3.1 6.726-6.774 6.726-3.674 0-6.774-3.1-6.774-6.726 0-3.626 3.1-6.726 6.774-6.726zM12 9a.75.75 0 01.75.75v3a.75.75 0 01-.75.75H9a.75.75 0 010-1.5h2.25V9.75A.75.75 0 0112 9z" />
           </svg>
         </div>
-        <div>
-          <h2 class="text-xl md:text-2xl font-black tracking-tight">내일수영</h2>
-          <p class="text-xs md:text-sm text-slate-400 font-medium mt-1 uppercase tracking-[0.2em]">Start your record</p>
+        <div class="space-y-1">
+          <h2 class="text-2xl font-black tracking-tighter">매일수영 시작하기</h2>
+          <p class="text-sm text-slate-400 font-medium">더 나은 수영 라이프의 시작</p>
         </div>
       </div>
 
-      <!-- Error Message -->
-      <transition name="fade">
-        <div v-if="error" class="mx-8 mb-4 bg-red-50 text-red-500 p-3.5 rounded-xl text-[11px] font-bold border border-red-100 flex items-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4">
-            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-          </svg>
-          아이디 또는 비밀번호를 확인해주세요.
-        </div>
-      </transition>
-
-      <!-- Form Section -->
-      <form class="p-8 md:p-10 pt-0 space-y-5" @submit.prevent="handleLogin">
-        <div class="space-y-1.5">
-          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Username</label>
-          <input 
-            v-model="form.username" 
-            type="text" 
-            required 
-            class="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm font-bold text-slate-700 placeholder:text-slate-300"
-            placeholder="아이디 입력"
-          />
-        </div>
-
-        <div class="space-y-1.5">
-          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Password</label>
-          <input 
-            v-model="form.password" 
-            type="password" 
-            required 
-            class="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm font-bold text-slate-700 placeholder:text-slate-300"
-            placeholder="비밀번호 입력"
-          />
-        </div>
-
-        <button 
-          type="submit" 
-          :disabled="loading"
-          class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-sm shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
-        >
-          <div v-if="loading" class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-          {{ loading ? '로그인 중' : '로그인' }}
+      <!-- Main Action Area -->
+      <div class="space-y-3">
+        <!-- 1. Social Logins -->
+        <button @click="handleSocialLogin('kakao')" class="w-full py-4 bg-[#FEE500] text-[#191919] rounded-xl font-bold text-sm flex items-center justify-center gap-3 hover:opacity-90 transition-all active:scale-[0.98]">
+          <img src="https://developers.kakao.com/assets/img/lib/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png" class="w-5 h-5" alt="Kakao">
+          카카오로 계속하기
+        </button>
+        
+        <button @click="handleSocialLogin('naver')" class="w-full py-4 bg-[#03C75A] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-3 hover:opacity-90 transition-all active:scale-[0.98]">
+          <span class="font-black text-lg leading-none">N</span>
+          네이버로 계속하기
         </button>
 
-        <div class="pt-4 text-center">
-          <p class="text-[11px] text-slate-400 font-medium">
-            아직 계정이 없으신가요?
-            <router-link to="/register" class="ml-1 font-bold text-blue-600 hover:text-blue-700 underline underline-offset-4">
-              회원가입
-            </router-link>
-          </p>
+        <button @click="handleSocialLogin('apple')" class="w-full py-4 bg-black text-white rounded-xl font-bold text-sm flex items-center justify-center gap-3 hover:opacity-90 transition-all active:scale-[0.98]">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.05 20.28c-.98.95-2.05 1.61-3.22 1.61-1.14 0-1.55-.67-2.85-.67-1.31 0-1.89.65-2.87.67-1.14.02-2.15-.63-3.15-1.61-2.05-2.02-3.15-5.75-3.15-8.47 0-3.1 1.95-4.75 3.82-4.75 1.05 0 1.85.65 2.65.65.75 0 1.75-.75 2.95-.75 1.15 0 2.15.5 2.85 1.25-2.15 1.25-1.85 4.35.65 5.25-.65 1.55-1.45 3.1-2.73 4.82zM12.05 4.18c-.05-1.15.45-2.25 1.15-3.1.95-1.1 2.25-1.85 3.4-1.85.1 1.2-.4 2.35-1.1 3.15-.9 1.05-2.3 1.85-3.45 1.8z"/></svg>
+          Apple로 계속하기
+        </button>
+
+        <!-- Divider -->
+        <div class="relative py-6">
+          <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-100"></div></div>
+          <div class="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-slate-300 bg-white px-4">OR</div>
         </div>
-      </form>
+
+        <!-- 2. Phone Number Login -->
+        <div v-if="step === 'phone'" class="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div class="relative group">
+            <input 
+              v-model="phoneNumber" 
+              type="tel" 
+              inputmode="numeric"
+              placeholder="휴대전화 번호 (- 제외)"
+              class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm font-bold"
+              @input="onlyNumbers"
+              @keyup.enter="isValidPhone && sendCode()"
+            />
+          </div>
+          <button @click="sendCode" :disabled="!isValidPhone" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all active:scale-[0.98] disabled:opacity-30">
+            인증번호 받기
+          </button>
+        </div>
+
+        <!-- 3. Verification Code Input -->
+        <div v-if="step === 'code'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div class="text-center space-y-1">
+            <p class="text-xs font-bold text-slate-500">{{ formatPhone(phoneNumber) }} 번호로 보냈어요.</p>
+            <p class="text-[10px] font-bold text-blue-500 bg-blue-50 inline-block px-2 py-0.5 rounded-full uppercase tracking-tighter">테스트용 번호: 1234</p>
+          </div>
+          
+          <div class="flex justify-center gap-3">
+            <input 
+              v-for="i in 4" :key="i"
+              :id="'code-' + (i-1)"
+              v-model="codes[i-1]"
+              type="tel"
+              inputmode="numeric"
+              maxlength="1"
+              class="w-12 h-14 bg-slate-50 border border-slate-100 rounded-xl text-center text-2xl font-black focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all"
+              @input="onCodeInput($event, i-1)"
+              @keydown.delete="onCodeDelete($event, i-1)"
+            />
+          </div>
+
+          <div class="flex flex-col gap-3 pt-2">
+            <button @click="verifyCode" :disabled="!isCodeFull" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-sm active:scale-[0.98] disabled:opacity-30">
+              인증 완료
+            </button>
+            <button @click="step = 'phone'" class="text-[11px] font-bold text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest">
+              번호 다시 입력하기
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Info -->
+      <p class="text-center text-[10px] text-slate-300 font-medium leading-relaxed px-4">
+        시작하기를 누름으로써 매일수영의 <br>
+        <router-link to="/terms" class="underline">이용약관</router-link> 및 <router-link to="/privacy" class="underline">개인정보처리방침</router-link>에 동의하게 됩니다.
+      </p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import axios from 'axios'
+import { ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const router = useRouter()
-const form = ref({ username: '', password: '' })
-const error = ref(false)
+const step = ref('phone')
+const phoneNumber = ref('')
+const codes = ref(['', '', '', ''])
 const loading = ref(false)
 
-const handleLogin = async () => {
-  loading.value = true
-  error.value = false
-  
-  const params = new URLSearchParams()
-  params.append('username', form.value.username)
-  params.append('password', form.value.password)
+const isValidPhone = computed(() => phoneNumber.value.length >= 10)
+const isCodeFull = computed(() => codes.value.every(c => c !== ''))
 
+const onlyNumbers = (e) => {
+  phoneNumber.value = e.target.value.replace(/[^0-9]/g, '')
+}
+
+const formatPhone = (num) => {
+  return num.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')
+}
+
+// 인증번호 입력 처리
+const onCodeInput = (e, index) => {
+  const val = e.target.value
+  // 숫자만 허용
+  if (!/^[0-9]$/.test(val)) {
+    codes.value[index] = ''
+    return
+  }
+  
+  // 다음 칸으로 포커스 이동
+  if (val && index < 3) {
+    nextTick(() => {
+      document.getElementById(`code-${index + 1}`).focus()
+    })
+  }
+
+  // 4자리 모두 입력되면 자동 인증
+  if (isCodeFull.value) {
+    verifyCode()
+  }
+}
+
+// 백스페이스 처리
+const onCodeDelete = (e, index) => {
+  if (e.key === 'Backspace' && !codes.value[index] && index > 0) {
+    nextTick(() => {
+      document.getElementById(`code-${index - 1}`).focus()
+    })
+  }
+}
+
+const sendCode = () => {
+  step.value = 'code'
+  // 첫 번째 입력칸에 포커스
+  nextTick(() => {
+    document.getElementById('code-0').focus()
+  })
+}
+
+const verifyCode = async () => {
+  if (loading.value) return
+  loading.value = true
+  const finalCode = codes.value.join('')
+  
   try {
-    await axios.post('/api/member/login', params, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    await axios.post('/api/member/login/phone', {
+      phoneNumber: phoneNumber.value,
+      code: finalCode
     })
     router.push('/')
   } catch (err) {
-    error.value = true
+    alert(err.response?.data?.message || '인증번호가 일치하지 않습니다. (1234를 입력해주세요)')
+    // 코드 리셋
+    codes.value = ['', '', '', '']
+    document.getElementById('code-0').focus()
   } finally {
     loading.value = false
   }
 }
+
+const handleSocialLogin = (provider) => {
+  alert(`${provider} 로그인은 현재 준비 중입니다.`)
+}
 </script>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.animate-in {
+  animation-duration: 0.4s;
+  animation-fill-mode: both;
+}
 </style>

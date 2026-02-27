@@ -9,7 +9,7 @@
           </svg>
         </div>
         <h1 class="text-base md:text-lg font-black text-slate-900 tracking-tight">
-          내일<span class="text-blue-600">수영</span>
+          매일<span class="text-blue-600">수영</span>
         </h1>
       </div>
 
@@ -44,20 +44,30 @@
 
       <div class="h-4 w-px bg-slate-100 hidden sm:block"></div>
 
-      <!-- User Profile (Compact) -->
-      <div class="flex items-center gap-2 cursor-pointer group px-1.5 py-1 rounded-full hover:bg-slate-50 transition-all duration-200" @click="$router.push('/settings')">
-        <div class="w-8 h-8 md:w-9 md:h-9 rounded-full border border-slate-100 overflow-hidden flex items-center justify-center bg-slate-50 shadow-sm group-hover:border-slate-300">
-          <img v-if="user.profileImageUrl" :src="user.profileImageUrl" class="w-full h-full object-cover" />
-          <span v-else class="text-slate-400 font-bold text-xs">{{ user.nickname?.charAt(0) }}</span>
+      <!-- Authenticated View -->
+      <template v-if="user.username">
+        <!-- User Profile (Compact) -->
+        <div class="flex items-center gap-2 cursor-pointer group px-1.5 py-1 rounded-full hover:bg-slate-50 transition-all duration-200" @click="$router.push('/settings')">
+          <div class="w-8 h-8 md:w-9 md:h-9 rounded-full border border-slate-100 overflow-hidden flex items-center justify-center bg-slate-50 shadow-sm group-hover:border-slate-300">
+            <img v-if="user.profileImageUrl" :src="user.profileImageUrl" class="w-full h-full object-cover" />
+            <span v-else class="text-slate-400 font-bold text-xs">{{ user.nickname?.charAt(0) }}</span>
+          </div>
+          <span class="hidden sm:block text-xs font-bold text-slate-600 group-hover:text-slate-900">{{ user.nickname }}</span>
         </div>
-        <span class="hidden sm:block text-xs font-bold text-slate-600 group-hover:text-slate-900">{{ user.nickname }}</span>
-      </div>
-      
-      <button @click="logout" class="p-2 text-slate-300 hover:text-red-500 transition-colors" title="로그아웃">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
-        </svg>
-      </button>
+        
+        <button @click="logout" class="p-2 text-slate-300 hover:text-red-500 transition-colors" title="로그아웃">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+          </svg>
+        </button>
+      </template>
+
+      <!-- Unauthenticated View -->
+      <template v-else>
+        <router-link to="/login" class="text-xs font-bold text-slate-400 hover:text-slate-900 px-2 py-1 transition-colors">
+          로그인
+        </router-link>
+      </template>
     </div>
   </header>
 </template>
@@ -88,7 +98,8 @@ const fetchUser = async () => {
     const res = await axios.get('/api/user/me')
     user.value = res.data
   } catch (err) {
-    router.push('/login')
+    // 로그인이 안 되어 있어도 약관 페이지 등은 볼 수 있어야 하므로 에러를 무시합니다.
+    user.value = { username: '', nickname: '', profileImageUrl: '' }
   }
 }
 

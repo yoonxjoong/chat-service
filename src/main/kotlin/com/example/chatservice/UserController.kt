@@ -17,14 +17,17 @@ class UserController(
 ) {
 
     @GetMapping("/me")
-    fun me(@AuthenticationPrincipal userDetails: UserDetails): Map<String, String?> {
+    fun me(@AuthenticationPrincipal userDetails: UserDetails?): ResponseEntity<Map<String, String?>> {
+        if (userDetails == null) {
+            return ResponseEntity.status(401).body(mapOf("message" to "Not logged in"))
+        }
         val member = memberRepository.findByUsername(userDetails.username)
-        return mapOf(
+        return ResponseEntity.ok(mapOf(
             "username" to (member?.username ?: ""),
             "nickname" to (member?.nickname ?: userDetails.username),
             "profileImageUrl" to member?.profileImageUrl,
             "distanceUnit" to (member?.distanceUnit ?: "METER")
-        )
+        ))
     }
 
     @PutMapping("/profile")

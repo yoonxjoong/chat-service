@@ -37,22 +37,32 @@
       </div>
 
       <!-- My Private Grid (3x3) -->
-      <div v-if="activeTab === 'mine'" class="space-y-6">
-        <div v-if="myPosts.length > 0" class="grid grid-cols-3 gap-1 md:gap-4 lg:gap-6">
-          <div 
-            v-for="post in myPosts" :key="post.id" 
-            class="group relative aspect-square bg-slate-50 rounded-lg overflow-hidden border border-slate-100 cursor-pointer active:scale-[0.98] transition-transform"
-          >
-            <!-- Placeholder Content (will be actual image) -->
-            <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-200 group-hover:text-slate-300 transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-8 h-8 md:w-10 md:h-10">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-              </svg>
+      <div v-if="activeTab === 'mine'" class="space-y-8">
+        <div v-if="visiblePosts.length > 0">
+          <div class="grid grid-cols-3 gap-1 md:gap-4 lg:gap-6">
+            <div 
+              v-for="post in visiblePosts" :key="post.id" 
+              class="group relative aspect-square bg-slate-50 rounded-lg overflow-hidden border border-slate-100 cursor-pointer active:scale-[0.98] transition-transform"
+            >
+              <!-- Placeholder Content (will be actual image) -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-200 group-hover:text-slate-300 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-8 h-8 md:w-10 md:h-10">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                </svg>
+              </div>
+              <!-- Minimal Overlay for Private View -->
+              <div class="absolute bottom-0 left-0 right-0 p-2 md:p-3 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                <p class="text-[9px] md:text-[10px] text-white font-bold">{{ post.date }}</p>
+              </div>
             </div>
-            <!-- Minimal Overlay for Private View -->
-            <div class="absolute bottom-0 left-0 right-0 p-2 md:p-3 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-              <p class="text-[9px] md:text-[10px] text-white font-bold">{{ post.date }}</p>
-            </div>
+          </div>
+
+          <!-- Load More Button -->
+          <div v-if="hasMore" class="flex justify-center pt-8">
+            <button @click="loadMore" :disabled="isLoadingMore" class="text-[11px] font-bold text-slate-400 hover:text-slate-900 transition-colors uppercase tracking-widest flex items-center gap-2">
+              <div v-if="isLoadingMore" class="animate-spin h-3 w-3 border-2 border-slate-300 border-t-slate-900 rounded-full"></div>
+              {{ isLoadingMore ? 'Loading...' : 'Load More' }}
+            </button>
           </div>
         </div>
 
@@ -123,11 +133,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import AppHeader from '../components/AppHeader.vue'
 
 const showUploadModal = ref(false)
 const activeTab = ref('mine')
+const isLoadingMore = ref(false)
+const displayLimit = ref(10)
 
 const tabs = [
   { name: 'mine', label: '나의 물옷', disabled: false },
@@ -135,11 +147,31 @@ const tabs = [
   { name: 'popular', label: '인기 (예정)', disabled: false }
 ]
 
-// 초기 샘플 데이터
-const myPosts = ref([
-  { id: 1, date: '2026.02.27' },
-  { id: 2, date: '2026.02.25' }
-])
+// 전체 시뮬레이션 데이터 (50장)
+const allPosts = ref(Array.from({ length: 50 }, (_, i) => ({
+  id: i + 1,
+  date: `2026.02.${String(Math.max(1, 27 - Math.floor(i/2))).padStart(2, '0')}`
+})))
+
+// 현재 화면에 보여줄 데이터 (pagination)
+const visiblePosts = computed(() => {
+  return allPosts.value.slice(0, displayLimit.value)
+})
+
+const hasMore = computed(() => {
+  return displayLimit.value < allPosts.value.length
+})
+
+const loadMore = () => {
+  if (isLoadingMore.value) return
+  isLoadingMore.value = true
+  
+  // 실제 API 호출 느낌을 주기 위한 딜레이
+  setTimeout(() => {
+    displayLimit.value += 10
+    isLoadingMore.value = false
+  }, 600)
+}
 </script>
 
 <style scoped>

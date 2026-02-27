@@ -71,6 +71,7 @@
               type="tel"
               inputmode="numeric"
               maxlength="1"
+              autocomplete="one-time-code"
               class="w-12 h-14 bg-slate-50 border border-slate-100 rounded-xl text-center text-2xl font-black focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all"
               @input="onCodeInput($event, i-1)"
               @keydown.delete="onCodeDelete($event, i-1)"

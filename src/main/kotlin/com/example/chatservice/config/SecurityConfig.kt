@@ -63,6 +63,11 @@ class SecurityConfig {
                     .deleteCookies("JSESSIONID")
                     .permitAll()
             }
+            .sessionManagement { session ->
+                session
+                    .sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.IF_REQUIRED)
+                    .maximumSessions(1)
+            }
         
         return http.build()
     }

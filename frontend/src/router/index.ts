@@ -29,14 +29,24 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  if (to.meta.requiresAuth) {
-    try {
-      await axios.get('/api/user/me')
-      next()
-    } catch (err) {
-      next('/login')
-    }
-  } else {
+  // 로그인 여부 체크
+  let isAuthenticated = false
+  try {
+    const res = await axios.get('/api/user/me')
+    isAuthenticated = !!res.data.username
+  } catch (err) {
+    isAuthenticated = false
+  }
+
+  // 인증이 필요한 페이지에 접근할 때
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/login')
+  } 
+  // 이미 로그인된 유저가 로그인/가입 페이지에 접근할 때
+  else if ((to.path === '/login' || to.path === '/register') && isAuthenticated) {
+    next('/')
+  }
+  else {
     next()
   }
 })

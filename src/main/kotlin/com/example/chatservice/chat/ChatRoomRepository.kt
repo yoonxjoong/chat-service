@@ -1,4 +1,4 @@
-package com.example.chatservice
+package com.example.chatservice.chat
 
 import org.springframework.data.redis.core.HashOperations
 import org.springframework.data.redis.core.RedisTemplate
@@ -9,9 +9,9 @@ import jakarta.annotation.PostConstruct
 class ChatRoomRepository(private val redisTemplate: RedisTemplate<String, Any>) {
 
     // Redis Hash Key for ChatRoom objects
-    private val CHAT_ROOMS = "CHAT_ROOM"
+    private val CHAT_ROOMS = "CHAT_ROOM_V2"
     // Redis Set Key prefix for User IDs in each room
-    private val USER_COUNT_PREFIX = "USER_COUNT:"
+    private val USER_COUNT_PREFIX = "USER_COUNT_V2:"
     
     private lateinit var opsHashChatRoom: HashOperations<String, String, ChatRoom>
 

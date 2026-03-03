@@ -1,6 +1,7 @@
-package com.example.chatservice
+package com.example.chatservice.record
 
 import org.springframework.data.jpa.repository.JpaRepository
+import com.example.chatservice.member.Member
 import java.time.LocalDate
 
 interface SwimmingRecordRepository : JpaRepository<SwimmingRecord, Long> {

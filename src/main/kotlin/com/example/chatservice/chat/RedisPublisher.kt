@@ -1,4 +1,4 @@
-package com.example.chatservice
+package com.example.chatservice.chat
 
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.listener.ChannelTopic

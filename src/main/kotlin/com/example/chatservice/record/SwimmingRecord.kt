@@ -1,7 +1,8 @@
-package com.example.chatservice
+package com.example.chatservice.record
 
 import jakarta.persistence.*
 import java.time.LocalDate
+import com.example.chatservice.member.Member
 
 enum class StrokeType {
     FREE,   // 자유형

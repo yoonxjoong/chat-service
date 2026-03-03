@@ -1,4 +1,4 @@
-package com.example.chatservice
+package com.example.chatservice.record
 
 import com.fasterxml.jackson.annotation.JsonFormat
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -6,6 +6,10 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
 import java.time.YearMonth
+import com.example.chatservice.member.MemberRepository
+import com.example.chatservice.chat.RedisPublisher
+import com.example.chatservice.chat.ChatMessage
+import com.example.chatservice.chat.MessageType
 
 @RestController
 @RequestMapping("/api/swimming")

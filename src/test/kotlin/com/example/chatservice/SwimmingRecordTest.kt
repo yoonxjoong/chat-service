@@ -1,5 +1,8 @@
 package com.example.chatservice
-
+import com.example.chatservice.chat.*
+import com.example.chatservice.member.*
+import com.example.chatservice.record.*
+import com.example.chatservice.image.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -34,6 +37,9 @@ class SwimmingRecordTest {
     private lateinit var swimmingRecordRepository: SwimmingRecordRepository
 
     @Autowired
+    private lateinit var mulOtRecordRepository: MulOtRecordRepository
+
+    @Autowired
     private lateinit var objectMapper: ObjectMapper
 
     private lateinit var mockMvc: MockMvc
@@ -54,6 +60,7 @@ class SwimmingRecordTest {
     fun setup() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build()
         swimmingRecordRepository.deleteAll()
+        mulOtRecordRepository.deleteAll()
         memberRepository.deleteAll()
     }
 

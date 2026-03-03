@@ -1,4 +1,4 @@
-package com.example.chatservice
+package com.example.chatservice.member
 
 import org.springframework.data.jpa.repository.JpaRepository
 

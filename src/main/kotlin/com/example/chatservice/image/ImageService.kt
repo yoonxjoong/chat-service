@@ -1,4 +1,4 @@
-package com.example.chatservice
+package com.example.chatservice.image
 
 import com.cloudinary.Cloudinary
 import com.cloudinary.utils.ObjectUtils

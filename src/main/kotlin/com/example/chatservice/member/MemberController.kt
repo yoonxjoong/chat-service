@@ -1,4 +1,4 @@
-package com.example.chatservice
+package com.example.chatservice.member
 
 import org.springframework.http.*
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken

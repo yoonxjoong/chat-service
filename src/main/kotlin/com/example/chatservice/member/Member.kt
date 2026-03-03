@@ -1,6 +1,7 @@
-package com.example.chatservice
+package com.example.chatservice.member
 
 import jakarta.persistence.*
+import com.example.chatservice.record.SwimmingRecord
 
 @Entity
 @Table(name = "members")

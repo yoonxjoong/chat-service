@@ -1,4 +1,4 @@
-package com.example.chatservice
+package com.example.chatservice.chat
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.data.redis.connection.Message

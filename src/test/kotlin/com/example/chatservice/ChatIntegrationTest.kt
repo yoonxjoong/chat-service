@@ -1,5 +1,8 @@
 package com.example.chatservice
-
+import com.example.chatservice.chat.*
+import com.example.chatservice.member.*
+import com.example.chatservice.record.*
+import com.example.chatservice.image.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.assertj.core.api.Assertions.assertThat

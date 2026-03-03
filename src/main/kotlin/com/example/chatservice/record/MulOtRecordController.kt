@@ -1,9 +1,10 @@
-package com.example.chatservice
+package com.example.chatservice.record
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDate
+import com.example.chatservice.member.MemberRepository
 
 @RestController
 @RequestMapping("/api/mul-ot")

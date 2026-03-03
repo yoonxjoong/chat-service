@@ -1,6 +1,6 @@
 package com.example.chatservice.config
 
-import com.example.chatservice.RedisSubscriber
+import com.example.chatservice.chat.RedisSubscriber
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.connection.RedisConnectionFactory
@@ -31,6 +31,11 @@ class RedisConfig {
         redisTemplate.connectionFactory = connectionFactory
         redisTemplate.keySerializer = StringRedisSerializer()
         redisTemplate.valueSerializer = Jackson2JsonRedisSerializer(Any::class.java)
+        
+        // Hash 관련 직렬화 설정 추가
+        redisTemplate.hashKeySerializer = StringRedisSerializer()
+        redisTemplate.hashValueSerializer = Jackson2JsonRedisSerializer(Any::class.java)
+        
         return redisTemplate
     }
 

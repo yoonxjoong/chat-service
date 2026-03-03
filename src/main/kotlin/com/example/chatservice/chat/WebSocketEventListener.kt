@@ -1,4 +1,4 @@
-package com.example.chatservice
+package com.example.chatservice.chat
 
 import org.springframework.context.event.EventListener
 import org.springframework.data.redis.listener.ChannelTopic

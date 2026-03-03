@@ -1,4 +1,4 @@
-package com.example.chatservice
+package com.example.chatservice.member
 
 import jakarta.persistence.EntityManager
 import jakarta.servlet.http.HttpServletRequest
@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
+import com.example.chatservice.record.SwimmingRecordRepository
+import com.example.chatservice.record.MulOtRecordRepository
 
 @RestController
 @RequestMapping("/api/user")

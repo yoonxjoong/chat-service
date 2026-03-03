@@ -1,4 +1,4 @@
-package com.example.chatservice
+package com.example.chatservice.member
 
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails

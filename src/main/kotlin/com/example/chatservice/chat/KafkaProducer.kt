@@ -1,4 +1,4 @@
-package com.example.chatservice
+package com.example.chatservice.chat
 
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service

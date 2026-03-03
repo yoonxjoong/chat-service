@@ -44,15 +44,18 @@
               v-for="post in visiblePosts" :key="post.id" 
               class="group relative aspect-square bg-slate-50 rounded-lg overflow-hidden border border-slate-100 cursor-pointer active:scale-[0.98] transition-transform"
             >
-              <!-- Placeholder Content (will be actual image) -->
-              <div class="absolute inset-0 flex flex-col items-center justify-center text-slate-200 group-hover:text-slate-300 transition-colors">
+              <!-- Actual image -->
+              <img v-if="post.imageUrl" :src="post.imageUrl" class="w-full h-full object-cover" />
+              <!-- Placeholder if no image -->
+              <div v-else class="absolute inset-0 flex flex-col items-center justify-center text-slate-200 group-hover:text-slate-300 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-8 h-8 md:w-10 md:h-10">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
                 </svg>
               </div>
               <!-- Minimal Overlay for Private View -->
-              <div class="absolute bottom-0 left-0 right-0 p-2 md:p-3 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+              <div class="absolute bottom-0 left-0 right-0 p-2 md:p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                 <p class="text-[9px] md:text-[10px] text-white font-bold">{{ post.date }}</p>
+                <p v-if="post.memo" class="text-[8px] md:text-[9px] text-white/80 truncate">{{ post.memo }}</p>
               </div>
             </div>
           </div>
@@ -116,16 +119,29 @@
             <button @click="showUploadModal = false" class="text-slate-400 p-1">✕</button>
           </div>
           
-          <div class="aspect-square bg-slate-50 rounded-xl border border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            <p class="text-[11px] font-bold uppercase tracking-wider">Photo Upload</p>
+          <div class="aspect-square bg-slate-50 rounded-xl border border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 text-slate-400 hover:bg-slate-100 transition-colors cursor-pointer relative overflow-hidden">
+            <input type="file" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" @change="handleImageUpload" :disabled="isUploading" />
+            
+            <template v-if="uploadForm.imageUrl">
+              <img :src="uploadForm.imageUrl" class="w-full h-full object-cover" />
+              <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                <p class="text-[10px] text-white font-bold">변경하려면 클릭</p>
+              </div>
+            </template>
+            <template v-else>
+              <div v-if="isUploading" class="animate-spin h-6 w-6 border-2 border-slate-300 border-t-slate-900 rounded-full"></div>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              <p class="text-[11px] font-bold uppercase tracking-wider">{{ isUploading ? 'Uploading...' : 'Photo Upload' }}</p>
+            </template>
           </div>
 
-          <textarea placeholder="제품 정보나 간단한 한마디" class="w-full px-4 py-3 rounded-xl bg-slate-50 border-none outline-none focus:ring-1 focus:ring-slate-900 h-24 resize-none text-xs"></textarea>
+          <textarea v-model="uploadForm.memo" placeholder="제품 정보나 간단한 한마디" class="w-full px-4 py-3 rounded-xl bg-slate-50 border-none outline-none focus:ring-1 focus:ring-slate-900 h-24 resize-none text-xs"></textarea>
 
-          <button class="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold text-xs hover:bg-slate-800 transition-all active:scale-95">저장하기</button>
+          <button @click="saveRecord" :disabled="isSaving || !uploadForm.imageUrl" class="w-full py-3.5 bg-slate-900 text-white rounded-xl font-bold text-xs hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-30">
+            {{ isSaving ? '저장 중...' : '저장하기' }}
+          </button>
         </div>
       </div>
     </transition>
@@ -133,13 +149,21 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 import AppHeader from '../components/AppHeader.vue'
 
 const showUploadModal = ref(false)
 const activeTab = ref('mine')
-const isLoadingMore = ref(false)
-const displayLimit = ref(10)
+const isLoading = ref(false)
+const isUploading = ref(false)
+const isSaving = ref(false)
+const displayLimit = ref(12)
+
+const uploadForm = ref({
+  imageUrl: '',
+  memo: ''
+})
 
 const tabs = [
   { name: 'mine', label: '나의 물옷', disabled: false },
@@ -147,11 +171,58 @@ const tabs = [
   { name: 'popular', label: '인기 (예정)', disabled: false }
 ]
 
-// 전체 시뮬레이션 데이터 (50장)
-const allPosts = ref(Array.from({ length: 50 }, (_, i) => ({
-  id: i + 1,
-  date: `2026.02.${String(Math.max(1, 27 - Math.floor(i/2))).padStart(2, '0')}`
-})))
+const allPosts = ref([])
+
+const fetchRecords = async () => {
+  isLoading.value = true
+  try {
+    const res = await axios.get('/api/mul-ot/records')
+    allPosts.value = res.data || []
+  } catch (err) {
+    console.error('Failed to fetch records', err)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const handleImageUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  isUploading.value = true
+  try {
+    const res = await axios.post('/api/image/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    uploadForm.value.imageUrl = res.data.url
+  } catch (err) {
+    alert('이미지 업로드에 실패했습니다.')
+  } finally {
+    isUploading.value = false
+  }
+}
+
+const saveRecord = async () => {
+  if (!uploadForm.value.imageUrl) return
+  
+  isSaving.value = true
+  try {
+    await axios.post('/api/mul-ot/record', {
+      imageUrl: uploadForm.value.imageUrl,
+      memo: uploadForm.value.memo
+    })
+    showUploadModal.value = false
+    uploadForm.value = { imageUrl: '', memo: '' }
+    await fetchRecords()
+  } catch (err) {
+    alert('기록 저장 중 오류가 발생했습니다.')
+  } finally {
+    isSaving.value = false
+  }
+}
 
 // 현재 화면에 보여줄 데이터 (pagination)
 const visiblePosts = computed(() => {
@@ -163,15 +234,10 @@ const hasMore = computed(() => {
 })
 
 const loadMore = () => {
-  if (isLoadingMore.value) return
-  isLoadingMore.value = true
-  
-  // 실제 API 호출 느낌을 주기 위한 딜레이
-  setTimeout(() => {
-    displayLimit.value += 10
-    isLoadingMore.value = false
-  }, 600)
+  displayLimit.value += 12
 }
+
+onMounted(fetchRecords)
 </script>
 
 <style scoped>

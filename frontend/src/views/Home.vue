@@ -151,6 +151,28 @@
                 </div>
               </div>
 
+              <!-- Image Upload for Record -->
+              <div class="space-y-2">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">오늘의 한 컷 (선택)</label>
+                <div class="relative w-full aspect-video bg-slate-50 rounded-xl border border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 overflow-hidden group cursor-pointer">
+                  <input type="file" class="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*" @change="handleImageUpload" :disabled="isUploadingImage" />
+                  
+                  <template v-if="recordForm.imageUrl">
+                    <img :src="recordForm.imageUrl" class="w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <p class="text-[10px] text-white font-bold">이미지 변경</p>
+                    </div>
+                  </template>
+                  <template v-else>
+                    <div v-if="isUploadingImage" class="animate-spin h-5 w-5 border-2 border-slate-300 border-t-slate-900 rounded-full"></div>
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 text-slate-300">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                    </svg>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{{ isUploadingImage ? 'Uploading...' : 'Upload Photo' }}</p>
+                  </template>
+                </div>
+              </div>
+
               <button @click="saveRecord" :disabled="isUploading || recordForm.distance <= 0" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-30 shadow-lg shadow-slate-200 mt-2">
                 {{ isUploading ? '저장 중...' : '저장하기' }}
               </button>
@@ -176,6 +198,7 @@ const showModal = ref(false)
 const selectedDate = ref('')
 const recordForm = ref({ strokeType: 'FREE', distance: 0, duration: 0, memo: '', imageUrl: '' })
 const isUploading = ref(false)
+const isUploadingImage = ref(false)
 
 const adjustDistance = (amount) => {
   recordForm.value.distance = Math.max(0, (recordForm.value.distance || 0) + amount)
@@ -242,6 +265,26 @@ const fetchRecords = async () => {
     const res = await axios.get(`/api/swimming/records?year=${currentYear.value}&month=${currentMonth.value}`)
     records.value = res.data || []
   } catch (err) {}
+}
+
+const handleImageUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  isUploadingImage.value = true
+  try {
+    const res = await axios.post('/api/image/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    recordForm.value.imageUrl = res.data.url
+  } catch (err) {
+    alert('이미지 업로드에 실패했습니다.')
+  } finally {
+    isUploadingImage.value = false
+  }
 }
 
 const monthlyTotalDistanceStr = computed(() => {
@@ -340,12 +383,13 @@ const saveRecord = async () => {
       distance: Number(toDbDistance(recordForm.value.distance)) || 0,
       duration: Number(recordForm.value.duration) || 0,
       memo: recordForm.value.memo || '',
-      imageUrl: null
+      imageUrl: recordForm.value.imageUrl || null
     }
     await axios.post('/api/swimming/record', payload)
     // 등록 후 폼 리셋 (날짜 모달은 열린 채 유지하여 추가 등록 가능하게 함)
     recordForm.value.distance = 0
     recordForm.value.duration = 0
+    recordForm.value.imageUrl = ''
     await fetchRecords()
   } catch (err) {
     alert('저장 중 오류가 발생했습니다.')

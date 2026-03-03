@@ -25,8 +25,8 @@ class SecurityConfig {
                 auth
                     // 가입 및 중복체크, 번호로그인, 정적 리소스 허용
                     .requestMatchers("/", "/api/member/register", "/api/member/check-id", "/api/member/login/phone", "/api/user/me", "/static/**", "/favicon.ico").permitAll()
-                    // 채팅, 수영 기록 및 민감한 정보 수정은 인증 필요
-                    .requestMatchers("/chat/**", "/ws-stomp/**", "/api/user/profile", "/api/user/withdraw", "/api/swimming/**").authenticated()
+                    // 채팅, 수영 기록, 물옷 기록, 이미지 업로드 및 민감한 정보 수정은 인증 필요
+                    .requestMatchers("/chat/**", "/ws-stomp/**", "/api/user/profile", "/api/user/withdraw", "/api/swimming/**", "/api/mul-ot/**", "/api/image/upload").authenticated()
                     .anyRequest().permitAll()
             }
             .exceptionHandling { handling ->

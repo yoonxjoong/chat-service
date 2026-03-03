@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*
 class UserController(
     private val memberRepository: MemberRepository,
     private val swimmingRecordRepository: SwimmingRecordRepository,
+    private val mulOtRecordRepository: MulOtRecordRepository,
     private val entityManager: EntityManager
 ) {
 
@@ -61,7 +62,10 @@ class UserController(
         // 1. 수영 기록 삭제
         swimmingRecordRepository.deleteAllByMember(member)
 
-        // 2. 보안 컨텍스트 로그아웃
+        // 2. 물옷 기록 삭제
+        mulOtRecordRepository.deleteAllByMember(member)
+
+        // 3. 보안 컨텍스트 로그아웃
         val auth = org.springframework.security.core.context.SecurityContextHolder.getContext().authentication
         if (auth != null) {
             SecurityContextLogoutHandler().logout(request, null, auth)

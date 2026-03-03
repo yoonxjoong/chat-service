@@ -15,6 +15,7 @@ import com.example.chatservice.chat.MessageType
 @RequestMapping("/api/swimming")
 class SwimmingRecordController(
     private val swimmingRecordRepository: SwimmingRecordRepository,
+    private val mulOtRecordRepository: MulOtRecordRepository,
     private val memberRepository: MemberRepository,
     private val redisPublisher: RedisPublisher,
     private val channelTopic: org.springframework.data.redis.listener.ChannelTopic
@@ -62,6 +63,21 @@ class SwimmingRecordController(
                 imageUrl = dto.imageUrl
             )
             swimmingRecordRepository.save(record)
+        }
+
+        // 0. 오늘의 한컷(이미지)이 있는 경우 물옷 갤러리(MulOtRecord)에도 저장
+        if (!dto.imageUrl.isNullOrBlank()) {
+            val alreadyExists = mulOtRecordRepository.existsByMemberAndImageUrl(member, dto.imageUrl)
+            
+            if (!alreadyExists) {
+                val mulOtRecord = MulOtRecord(
+                    member = member,
+                    date = dto.date,
+                    imageUrl = dto.imageUrl,
+                    memo = "수영 기록에서 추가됨: ${dto.memo ?: ""}"
+                )
+                mulOtRecordRepository.save(mulOtRecord)
+            }
         }
 
         if (dto.date == LocalDate.now()) {

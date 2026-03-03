@@ -33,28 +33,28 @@
         </button>
 
         <!-- Divider -->
-        <div class="relative py-6">
-          <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-100"></div></div>
-          <div class="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-slate-300 bg-white px-4">OR</div>
-        </div>
+<!--        <div class="relative py-6">-->
+<!--          <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-100"></div></div>-->
+<!--          <div class="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-slate-300 bg-white px-4">OR</div>-->
+<!--        </div>-->
 
         <!-- 2. Phone Number Login -->
-        <div v-if="step === 'phone'" class="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          <div class="relative group">
-            <input 
-              v-model="phoneNumber" 
-              type="tel" 
-              inputmode="numeric"
-              placeholder="휴대전화 번호 (- 제외)"
-              class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm font-bold"
-              @input="onlyNumbers"
-              @keyup.enter="isValidPhone && sendCode()"
-            />
-          </div>
-          <button @click="sendCode" :disabled="!isValidPhone" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all active:scale-[0.98] disabled:opacity-30">
-            인증번호 받기
-          </button>
-        </div>
+<!--        <div v-if="step === 'phone'" class="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">-->
+<!--          <div class="relative group">-->
+<!--            <input -->
+<!--              v-model="phoneNumber" -->
+<!--              type="tel" -->
+<!--              inputmode="numeric"-->
+<!--              placeholder="휴대전화 번호 (- 제외)"-->
+<!--              class="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm font-bold"-->
+<!--              @input="onlyNumbers"-->
+<!--              @keyup.enter="isValidPhone && sendCode()"-->
+<!--            />-->
+<!--          </div>-->
+<!--          <button @click="sendCode" :disabled="!isValidPhone" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all active:scale-[0.98] disabled:opacity-30">-->
+<!--            인증번호 받기-->
+<!--          </button>-->
+<!--        </div>-->
 
         <!-- 3. Verification Code Input -->
         <div v-if="step === 'code'" class="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">

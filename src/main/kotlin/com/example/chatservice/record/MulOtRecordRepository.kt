@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository
 interface MulOtRecordRepository : JpaRepository<MulOtRecord, Long> {
     fun findAllByMemberOrderByDateDesc(member: Member): List<MulOtRecord>
     fun deleteAllByMember(member: Member)
+    fun existsByMemberAndImageUrl(member: Member, imageUrl: String): Boolean
 }

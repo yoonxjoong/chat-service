@@ -34,14 +34,26 @@
             </div>
             <div class="flex-1 space-y-4">
               <div class="space-y-1">
-                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter ml-1">Nickname</label>
-                <input v-model="profileEdit.nickname" class="w-full px-4 py-2.5 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm font-bold text-slate-700" />
+                <div class="flex items-center justify-between ml-1">
+                  <label class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">Nickname</label>
+                  <span v-if="isUpdating" class="text-[9px] font-bold text-blue-500 animate-pulse uppercase">Saving...</span>
+                  <span v-else-if="isSaved" class="text-[9px] font-bold text-emerald-500 uppercase flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-2.5 h-2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    Saved
+                  </span>
+                </div>
+                <input 
+                  v-model="profileEdit.nickname" 
+                  @blur="updateProfile"
+                  @keyup.enter="$event.target.blur()"
+                  class="w-full px-4 py-2.5 bg-slate-50 border border-transparent rounded-xl focus:bg-white focus:ring-1 focus:ring-slate-900 outline-none transition-all text-sm font-bold text-slate-700" 
+                  placeholder="닉네임을 입력하세요"
+                />
               </div>
             </div>
           </div>
-          <button @click="updateProfile" :disabled="isUpdating || isUploading" class="w-full py-3.5 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all active:scale-[0.98] disabled:opacity-30 shadow-lg shadow-slate-200">
-            {{ isUpdating ? '저장 중...' : '프로필 저장' }}
-          </button>
         </div>
       </div>
 
@@ -160,6 +172,7 @@ const router = useRouter()
 const user = ref({ username: '', nickname: '', profileImageUrl: '', distanceUnit: 'METER' })
 const profileEdit = ref({ nickname: '', profileImageUrl: '', distanceUnit: 'METER' })
 const isUpdating = ref(false)
+const isSaved = ref(false)
 const isUploading = ref(false)
 
 const fetchUser = async () => {
@@ -189,6 +202,8 @@ const handleImageUpload = async (event) => {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     profileEdit.value.profileImageUrl = res.data.url
+    // 업로드 성공 시 즉시 프로필 저장 수행
+    await updateProfile()
   } catch (err) {
     alert('이미지 업로드에 실패했습니다.')
   } finally {
@@ -205,9 +220,14 @@ const updateProfile = async () => {
   if (!profileEdit.value.nickname.trim()) return
   
   isUpdating.value = true
+  isSaved.value = false
   try {
     await axios.put('/api/user/profile', profileEdit.value)
     await fetchUser() // 정보 갱신
+    isSaved.value = true
+    setTimeout(() => {
+      isSaved.value = false
+    }, 2000)
   } catch (err) {
     alert('프로필 수정 중 오류가 발생했습니다.')
   } finally {

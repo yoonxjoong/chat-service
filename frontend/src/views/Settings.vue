@@ -218,7 +218,7 @@ const updateProfile = async () => {
 const handleLogout = async () => {
   if (confirm('로그아웃 하시겠습니까?')) {
     try {
-      await axios.post('/api/user/logout') // 백엔드 로그아웃 API 호출 (필요 시)
+      await axios.post('/api/member/logout') // 백엔드 로그아웃 API 호출 (SecurityConfig 기준)
       router.push('/login')
     } catch (err) {
       // API가 없더라도 클라이언트에서는 로그인 페이지로 이동

@@ -2,6 +2,7 @@ package com.example.chatservice
 
 import jakarta.persistence.EntityManager
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler

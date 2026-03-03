@@ -99,15 +99,42 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, nextTick, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 
 const router = useRouter()
+const route = useRoute()
 const step = ref('phone')
 const phoneNumber = ref('')
 const codes = ref(['', '', '', ''])
 const loading = ref(false)
+
+onMounted(async () => {
+  if (window.Kakao && !window.Kakao.isInitialized()) {
+    window.Kakao.init('10370eb1fddb35728f39be1f5a057cb5');
+  }
+
+  // URL에서 인가 코드(code) 확인
+  const code = route.query.code;
+  if (code) {
+    loading.value = true;
+    try {
+      const response = await axios.post('/api/member/login/kakao', {
+        code: code,
+        redirectUri: window.location.origin + '/login'
+      });
+      console.log('Kakao login success', response.data);
+      router.push('/');
+    } catch (error) {
+      console.error('Kakao login failed', error);
+      alert('카카오 로그인 중 오류가 발생했습니다.');
+      router.replace('/login'); // 에러 발생 시 쿼리 파라미터 제거
+    } finally {
+      loading.value = false;
+    }
+  }
+})
 
 const isValidPhone = computed(() => phoneNumber.value.length >= 10)
 const isCodeFull = computed(() => codes.value.every(c => c !== ''))
@@ -181,7 +208,23 @@ const verifyCode = async () => {
 }
 
 const handleSocialLogin = (provider) => {
-  alert(`${provider} 로그인은 현재 준비 중입니다.`)
+  if (provider === 'kakao') {
+    if (!window.Kakao) {
+      alert('카카오 SDK가 아직 로드되지 않았습니다.');
+      return;
+    }
+
+    if (!window.Kakao.isInitialized()) {
+      window.Kakao.init('10370eb1fddb35728f39be1f5a057cb5');
+    }
+
+    // V2 권장 방식: 리다이렉트
+    window.Kakao.Auth.authorize({
+      redirectUri: window.location.origin + '/login'
+    });
+  } else {
+    alert(`${provider} 로그인은 현재 준비 중입니다.`)
+  }
 }
 </script>
 

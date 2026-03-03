@@ -42,21 +42,31 @@
         <div class="grid grid-cols-7">
           <div 
             v-for="(date, idx) in calendarDays" :key="idx"
-            :class="['group relative min-h-[80px] md:min-h-[110px] p-2 border-r border-b border-slate-50 transition-all cursor-pointer active:bg-slate-50', 
+            :class="['group relative min-h-[80px] md:min-h-[110px] p-2 border-r border-b border-slate-50 transition-all cursor-pointer active:bg-slate-50 overflow-hidden', 
                      date.isCurrentMonth ? 'bg-white' : 'bg-slate-50/20 opacity-40']"
             @click="openRecordModal(date)"
           >
+            <!-- 배경 이미지 (자연스러운 전체 보기) -->
+            <div v-if="getRecordsForDate(date.fullDate).find(r => r.imageUrl)" class="absolute inset-0 z-0 overflow-hidden bg-slate-50">
+              <!-- 흐린 배경 (빈틈 채우기) -->
+              <img :src="getRecordsForDate(date.fullDate).find(r => r.imageUrl).imageUrl" class="absolute inset-0 w-full h-full object-cover blur-xl opacity-30 scale-125 transition-opacity group-hover:opacity-50" />
+              <!-- 원본 비율 유지 중앙 배치 -->
+              <img :src="getRecordsForDate(date.fullDate).find(r => r.imageUrl).imageUrl" class="absolute inset-0 w-full h-full object-contain p-1 drop-shadow-sm transition-transform duration-500 group-hover:scale-105" />
+              <!-- 가독성 오버레이 -->
+              <div class="absolute inset-0 bg-white/20 group-hover:bg-transparent transition-colors"></div>
+            </div>
+
             <span :class="['relative z-10 text-[11px] font-semibold', 
                           hasRecordOn(date.fullDate) ? 'text-blue-600 font-bold' : 'text-slate-400']">
               {{ date.day }}
             </span>
             
-            <div v-if="hasRecordOn(date.fullDate)" class="mt-1 space-y-1">
+            <div v-if="hasRecordOn(date.fullDate)" class="relative z-10 mt-1 space-y-1">
               <div v-for="rec in getRecordsForDate(date.fullDate).slice(0, 2)" :key="rec.id" class="flex items-center gap-1">
                  <div :class="['w-1 h-1 rounded-full', getStrokeColor(rec.strokeType)]"></div>
-                 <span class="text-[9px] font-bold text-slate-600 truncate">{{ toDisplayDistance(rec.distance) }}{{ unitLabel }}</span>
+                 <span class="text-[9px] font-bold text-slate-800 truncate">{{ toDisplayDistance(rec.distance) }}{{ unitLabel }}</span>
               </div>
-              <div v-if="getRecordsForDate(date.fullDate).length > 2" class="text-[8px] font-bold text-slate-300">+{{ getRecordsForDate(date.fullDate).length - 2 }}</div>
+              <div v-if="getRecordsForDate(date.fullDate).length > 2" class="text-[8px] font-bold text-slate-500">+{{ getRecordsForDate(date.fullDate).length - 2 }}</div>
             </div>
           </div>
         </div>
@@ -91,19 +101,25 @@
             <!-- Existing Records List -->
             <div v-if="getRecordsForDate(selectedDate).length > 0" class="space-y-3">
                <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">저장된 기록</p>
-               <div v-for="rec in getRecordsForDate(selectedDate)" :key="rec.id" class="bg-slate-50 p-4 rounded-xl flex justify-between items-center border border-slate-100">
-                  <div class="flex items-center gap-3">
-                    <div :class="['w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-[10px]', getStrokeColor(rec.strokeType)]">
-                      {{ getStrokeShortName(rec.strokeType) }}
+               <div v-for="rec in getRecordsForDate(selectedDate)" :key="rec.id" class="bg-slate-50 p-4 rounded-xl flex flex-col gap-3 border border-slate-100">
+                  <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                      <div :class="['w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-[10px]', getStrokeColor(rec.strokeType)]">
+                        {{ getStrokeShortName(rec.strokeType) }}
+                      </div>
+                      <div>
+                        <p class="text-xs font-bold text-slate-800">{{ getStrokeName(rec.strokeType) }}</p>
+                        <p class="text-[10px] text-slate-400">{{ rec.duration }}분</p>
+                      </div>
                     </div>
-                    <div>
-                      <p class="text-xs font-bold text-slate-800">{{ getStrokeName(rec.strokeType) }}</p>
-                      <p class="text-[10px] text-slate-400">{{ rec.duration }}분</p>
+                    <div class="text-right">
+                      <p class="text-sm font-black text-slate-900">{{ toDisplayDistance(rec.distance) }}{{ unitLabel }}</p>
+                      <button @click="removeRecord(rec.id)" class="text-[9px] font-bold text-red-400 hover:text-red-600 transition-colors uppercase tracking-widest mt-0.5">삭제</button>
                     </div>
                   </div>
-                  <div class="text-right">
-                    <p class="text-sm font-black text-slate-900">{{ toDisplayDistance(rec.distance) }}{{ unitLabel }}</p>
-                    <button @click="removeRecord(rec.id)" class="text-[9px] font-bold text-red-400 hover:text-red-600 transition-colors uppercase tracking-widest mt-0.5">삭제</button>
+                  <!-- 오늘의 한컷 이미지 표시 -->
+                  <div v-if="rec.imageUrl" class="relative w-full aspect-video rounded-lg overflow-hidden border border-slate-200">
+                    <img :src="rec.imageUrl" class="w-full h-full object-cover" />
                   </div>
                </div>
             </div>

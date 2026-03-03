@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-white/80 backdrop-blur-md border-b border-slate-50 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center sticky top-0 z-40 transition-all duration-300">
+  <header class="hidden md:flex bg-white/80 backdrop-blur-md border-b border-slate-50 px-4 md:px-6 py-3 md:py-4 justify-between items-center sticky top-0 z-40 transition-all duration-300">
     <div class="flex items-center gap-6 md:gap-12">
       <!-- Minimal Logo -->
       <div class="flex items-center gap-2 cursor-pointer group" @click="$router.push('/')">
@@ -29,19 +29,6 @@
 
     <!-- Right Section -->
     <div class="flex items-center gap-3 md:gap-5">
-      <!-- Mobile Nav Icons (Simplified) -->
-      <nav class="md:hidden flex gap-0.5">
-         <router-link 
-          v-for="menu in menuItems.slice(0, 3)" 
-          :key="menu.path"
-          :to="menu.path" 
-          class="p-2 rounded-lg text-slate-400"
-          :class="route.path === menu.path ? 'text-slate-900' : ''"
-        >
-          <span class="text-[11px] font-bold">{{ menu.label }}</span>
-        </router-link>
-      </nav>
-
       <div class="h-4 w-px bg-slate-100 hidden sm:block"></div>
 
       <!-- Authenticated View -->

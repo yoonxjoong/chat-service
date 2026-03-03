@@ -20,6 +20,8 @@ class Member(
 
     var distanceUnit: String = "METER",
 
+    var provider: String? = null,
+
     @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL], orphanRemoval = true)
     val swimmingRecords: MutableList<SwimmingRecord> = mutableListOf()
 )

@@ -111,25 +111,34 @@ const codes = ref(['', '', '', ''])
 const loading = ref(false)
 
 onMounted(async () => {
+  // 1. Kakao SDK 초기화
   if (window.Kakao && !window.Kakao.isInitialized()) {
     window.Kakao.init('10370eb1fddb35728f39be1f5a057cb5');
   }
 
-  // URL에서 인가 코드(code) 확인
+  // 2. 콜백 처리 (카카오 또는 네이버)
   const code = route.query.code;
+  const state = route.query.state;
+
   if (code) {
     loading.value = true;
     try {
-      const response = await axios.post('/api/member/login/kakao', {
-        code: code,
-        redirectUri: window.location.origin + '/login'
-      });
-      console.log('Kakao login success', response.data);
+      let endpoint = '/api/member/login/kakao';
+      let payload = { code, redirectUri: window.location.origin + '/login' };
+
+      // state가 있으면 네이버 로그인으로 판단
+      if (state) {
+        endpoint = '/api/member/login/naver';
+        payload = { code, state };
+      }
+
+      const response = await axios.post(endpoint, payload);
+      console.log('Social login success', response.data);
       router.push('/');
     } catch (error) {
-      console.error('Kakao login failed', error);
-      alert('카카오 로그인 중 오류가 발생했습니다.');
-      router.replace('/login'); // 에러 발생 시 쿼리 파라미터 제거
+      console.error('Social login failed', error);
+      alert('로그인 처리 중 오류가 발생했습니다.');
+      router.replace('/login');
     } finally {
       loading.value = false;
     }
@@ -147,29 +156,22 @@ const formatPhone = (num) => {
   return num.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')
 }
 
-// 인증번호 입력 처리
 const onCodeInput = (e, index) => {
   const val = e.target.value
-  // 숫자만 허용
   if (!/^[0-9]$/.test(val)) {
     codes.value[index] = ''
     return
   }
-  
-  // 다음 칸으로 포커스 이동
   if (val && index < 3) {
     nextTick(() => {
       document.getElementById(`code-${index + 1}`).focus()
     })
   }
-
-  // 4자리 모두 입력되면 자동 인증
   if (isCodeFull.value) {
     verifyCode()
   }
 }
 
-// 백스페이스 처리
 const onCodeDelete = (e, index) => {
   if (e.key === 'Backspace' && !codes.value[index] && index > 0) {
     nextTick(() => {
@@ -180,7 +182,6 @@ const onCodeDelete = (e, index) => {
 
 const sendCode = () => {
   step.value = 'code'
-  // 첫 번째 입력칸에 포커스
   nextTick(() => {
     document.getElementById('code-0').focus()
   })
@@ -190,7 +191,6 @@ const verifyCode = async () => {
   if (loading.value) return
   loading.value = true
   const finalCode = codes.value.join('')
-  
   try {
     await axios.post('/api/member/login/phone', {
       phoneNumber: phoneNumber.value,
@@ -199,7 +199,6 @@ const verifyCode = async () => {
     router.push('/')
   } catch (err) {
     alert(err.response?.data?.message || '인증번호가 일치하지 않습니다. (1234를 입력해주세요)')
-    // 코드 리셋
     codes.value = ['', '', '', '']
     document.getElementById('code-0').focus()
   } finally {
@@ -208,21 +207,26 @@ const verifyCode = async () => {
 }
 
 const handleSocialLogin = (provider) => {
+  const redirectUri = window.location.origin + '/login';
+
   if (provider === 'kakao') {
-    if (!window.Kakao) {
-      alert('카카오 SDK가 아직 로드되지 않았습니다.');
-      return;
-    }
-
-    if (!window.Kakao.isInitialized()) {
-      window.Kakao.init('10370eb1fddb35728f39be1f5a057cb5');
-    }
-
-    // V2 권장 방식: 리다이렉트
-    window.Kakao.Auth.authorize({
-      redirectUri: window.location.origin + '/login'
+    if (!window.Kakao) return alert('카카오 SDK 로드 중...');
+    if (!window.Kakao.isInitialized()) window.Kakao.init('10370eb1fddb35728f39be1f5a057cb5');
+    
+    // 매번 동의 화면(및 계정 선택)을 띄우려면 prompt: 'select_account' 추가
+    window.Kakao.Auth.authorize({ 
+      redirectUri,
+      prompt: 'select_account'
     });
-  } else {
+  } 
+  else if (provider === 'naver') {
+    const clientId = 'yE_8k2KwVSQpt144laNn';
+    const state = Math.random().toString(36).substring(2);
+    // auth_type=reprompt: 네이버에서 항상 동의 창을 띄우는 옵션
+    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&auth_type=reprompt`;
+    window.location.href = naverAuthUrl;
+  }
+  else {
     alert(`${provider} 로그인은 현재 준비 중입니다.`)
   }
 }

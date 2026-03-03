@@ -65,6 +65,23 @@
               {{ profileEdit.distanceUnit === 'YARD' ? 'Yards (yd)' : 'Meters (m)' }}
             </span>
           </div>
+
+          <div class="p-5 flex items-center justify-between group cursor-pointer hover:bg-slate-50 transition-colors" @click="handleLogout">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                </svg>
+              </div>
+              <div class="space-y-0.5 text-left">
+                <p class="text-xs font-bold text-slate-900">로그아웃</p>
+                <p class="text-[10px] text-slate-400 font-medium">현재 계정에서 로그아웃합니다.</p>
+              </div>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-300">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </div>
           
           <div class="p-5 flex items-center justify-between group cursor-pointer hover:bg-slate-50 transition-colors" @click="handleWithdraw">
             <div class="flex items-center gap-3">
@@ -74,15 +91,64 @@
                 </svg>
               </div>
               <div class="space-y-0.5 text-left">
-                <p class="text-xs font-bold text-slate-900">회원 탈퇴</p>
-                <p class="text-[10px] text-slate-400 font-medium">모든 기록이 삭제됩니다.</p>
+                <p class="text-xs font-bold text-red-600">회원 탈퇴</p>
+                <p class="text-[10px] text-slate-400 font-medium">모든 기록이 즉시 삭제됩니다.</p>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Support & Legal -->
+      <div class="space-y-4">
+        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">Support & Legal</h3>
+        <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 divide-y divide-slate-50">
+          <router-link to="/terms" class="p-5 flex items-center justify-between group hover:bg-slate-50 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+              </div>
+              <p class="text-xs font-bold text-slate-900">이용약관</p>
             </div>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-300">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
             </svg>
+          </router-link>
+
+          <router-link to="/privacy" class="p-5 flex items-center justify-between group hover:bg-slate-50 transition-colors">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.959 11.959 0 0112 2.714z" />
+                </svg>
+              </div>
+              <p class="text-xs font-bold text-slate-900">개인정보처리방침</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-300">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </router-link>
+
+          <div class="p-5 flex items-center justify-between group cursor-pointer hover:bg-slate-50 transition-colors" @click="handleContact">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-slate-50 text-slate-600 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.303.025-.607.047-.912.066a48.623 48.623 0 01-5.592 0 48.204 48.204 0 01-5.592 0 48.252 48.252 0 01-.912-.066 2.188 2.188 0 01-1.98-2.193V10.608c0-.969.616-1.813 1.5-2.097a48.11 48.11 0 0115.408 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.445 14.927A4.514 4.514 0 0010.5 15.75c.675 0 1.312-.15 1.886-.418a4.51 4.51 0 002.169-2.581m-5.11 2.176a4.51 4.51 0 01-2.169-2.581m5.11 2.176a4.514 4.514 0 012.055-.823m-2.055.823l.011.011" />
+                </svg>
+              </div>
+              <p class="text-xs font-bold text-slate-900">문의하기</p>
+            </div>
+            <p class="text-[10px] font-bold text-slate-300">yhj8372@naver.com</p>
           </div>
         </div>
+      </div>
+
+      <!-- App Info -->
+      <div class="text-center pt-8 pb-4">
+        <p class="text-[10px] font-black text-slate-200 uppercase tracking-[0.4em]">Swim Too v1.0.0</p>
       </div>
     </div>
   </div>
@@ -150,6 +216,22 @@ const updateProfile = async () => {
   } finally {
     isUpdating.value = false
   }
+}
+
+const handleLogout = async () => {
+  if (confirm('로그아웃 하시겠습니까?')) {
+    try {
+      await axios.post('/api/user/logout') // 백엔드 로그아웃 API 호출 (필요 시)
+      router.push('/login')
+    } catch (err) {
+      // API가 없더라도 클라이언트에서는 로그인 페이지로 이동
+      router.push('/login')
+    }
+  }
+}
+
+const handleContact = () => {
+  window.location.href = 'mailto:yhj8372@naver.com'
 }
 
 const handleWithdraw = async () => {

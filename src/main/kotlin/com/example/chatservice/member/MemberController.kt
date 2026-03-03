@@ -2,23 +2,35 @@ package com.example.chatservice.member
 
 import org.springframework.http.*
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.User
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.util.LinkedMultiValueMap
 import jakarta.servlet.http.HttpServletRequest
+import com.example.chatservice.record.SwimmingRecordRepository
+import com.example.chatservice.record.MulOtRecordRepository
 
 @RestController
 @RequestMapping("/api/member")
 class MemberController(
     private val memberRepository: MemberRepository,
+    private val swimmingRecordRepository: SwimmingRecordRepository,
+    private val mulOtRecordRepository: MulOtRecordRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
 
     private val restTemplate = RestTemplate()
+    private val KAKAO_ADMIN_KEY = "780dfc47bfb99d28bc1abc34b0bf0ff9"
+    private val KAKAO_CLIENT_ID = "10370eb1fddb35728f39be1f5a057cb5"
+    private val NAVER_CLIENT_ID = "yE_8k2KwVSQpt144laNn"
+    private val NAVER_CLIENT_SECRET = "LvmhDhk5fj"
 
     // 카카오 로그인
     @PostMapping("/login/kakao")
@@ -35,7 +47,7 @@ class MemberController(
         
         val tokenBody = LinkedMultiValueMap<String, String>()
         tokenBody.add("grant_type", "authorization_code")
-        tokenBody.add("client_id", "10370eb1fddb35728f39be1f5a057cb5") 
+        tokenBody.add("client_id", KAKAO_CLIENT_ID) 
         tokenBody.add("redirect_uri", redirectUri)
         tokenBody.add("code", code)
 
@@ -56,8 +68,8 @@ class MemberController(
         
         val tokenBody = LinkedMultiValueMap<String, String>()
         tokenBody.add("grant_type", "authorization_code")
-        tokenBody.add("client_id", "yE_8k2KwVSQpt144laNn")
-        tokenBody.add("client_secret", "LvmhDhk5fj")
+        tokenBody.add("client_id", NAVER_CLIENT_ID)
+        tokenBody.add("client_secret", NAVER_CLIENT_SECRET)
         tokenBody.add("code", code)
         tokenBody.add("state", state)
 
@@ -76,6 +88,9 @@ class MemberController(
             val tokenRequest = HttpEntity(tokenBody, tokenHeaders)
             val tokenResponse = restTemplate.postForEntity(tokenUrl, tokenRequest, Map::class.java)
             val accessToken = (tokenResponse.body as Map<*, *>)["access_token"] as String
+
+            // 연동 해제를 위해 액세스 토큰을 세션에 저장
+            servletRequest.getSession(true).setAttribute("${provider}_access_token", accessToken)
 
             val headers = HttpHeaders()
             headers.setBearerAuth(accessToken)
@@ -151,6 +166,90 @@ class MemberController(
 
     @GetMapping("/check-id")
     fun checkId(@RequestParam username: String) = ResponseEntity.ok(mapOf("exists" to (memberRepository.findByUsername(username) != null)))
+
+    // 소셜 연동 해제
+    @PostMapping("/unlink")
+    @Transactional
+    fun unlinkSocialAccount(
+        @AuthenticationPrincipal userDetails: UserDetails,
+        servletRequest: HttpServletRequest
+    ): ResponseEntity<Map<String, String>> {
+        println("Unlink request received for user: ${userDetails.username}")
+        val member = memberRepository.findByUsername(userDetails.username)
+            ?: run {
+                println("Unlink failed: User not found in DB - ${userDetails.username}")
+                return ResponseEntity.status(404).body(mapOf("message" to "사용자를 찾을 수 없습니다."))
+            }
+
+        println("Unlinking member: ${member.username}, Provider: ${member.provider}")
+        if (member.provider == null) {
+            println("Unlink failed: Member is not a social account - ${member.username}")
+            return ResponseEntity.badRequest().body(mapOf("message" to "소셜 로그인 계정이 아닙니다."))
+        }
+
+        try {
+            // 0. 카카오 연동 해제 처리 (어드민 키 이용)
+            if (member.provider == "kakao") {
+                val kakaoId = member.username.replace("kakao_", "")
+                println("Requesting Kakao unlink for ID: $kakaoId")
+
+                val headers = HttpHeaders()
+                headers.set("Authorization", "KakaoAK $KAKAO_ADMIN_KEY")
+                headers.contentType = MediaType.APPLICATION_FORM_URLENCODED
+
+                val params = LinkedMultiValueMap<String, String>()
+                params.add("target_id_type", "user_id")
+                params.add("target_id", kakaoId)
+
+                val request = HttpEntity(params, headers)
+                try {
+                    val response = restTemplate.postForEntity("https://kapi.kakao.com/v1/user/unlink", request, String::class.java)
+                    println("Kakao unlink success for user ${member.username}: ${response.body}")
+                } catch (e: Exception) {
+                    println("Kakao server unlink error (proceeding anyway): ${e.message}")
+                }
+            }
+
+            // 0-1. 네이버 연동 해제 처리 (액세스 토큰 이용)
+            if (member.provider == "naver") {
+                val accessToken = servletRequest.getSession(false)?.getAttribute("naver_access_token") as? String
+                if (accessToken != null) {
+                    println("Requesting Naver unlink for user: ${member.username}")
+                    val naverUnlinkUrl = "https://nid.naver.com/oauth2.0/token?grant_type=delete&client_id=$NAVER_CLIENT_ID&client_secret=$NAVER_CLIENT_SECRET&access_token=$accessToken&service_provider=NAVER"
+                    try {
+                        val response = restTemplate.getForEntity(naverUnlinkUrl, String::class.java)
+                        println("Naver unlink success for user ${member.username}: ${response.body}")
+                    } catch (e: Exception) {
+                        println("Naver server unlink error (proceeding anyway): ${e.message}")
+                    }
+                } else {
+                    println("Naver access token not found in session for user: ${member.username}")
+                }
+            }
+
+            // 1. 회원 관련 기록 삭제 (무결성 제약 조건 해결)
+            swimmingRecordRepository.deleteAllByMember(member)
+            mulOtRecordRepository.deleteAllByMember(member)
+            println("All records deleted for user: ${member.username}")
+
+            // 2. 로그아웃 처리
+            val auth = SecurityContextHolder.getContext().authentication
+            if (auth != null) {
+                SecurityContextLogoutHandler().logout(servletRequest, null, auth)
+                println("Logout successful for user: ${member.username}")
+            }
+
+            // 3. 회원 데이터 삭제
+            memberRepository.delete(member)
+            println("Member data deleted successfully: ${member.username}")
+
+            return ResponseEntity.ok(mapOf("message" to "${member.provider} 연동 해제가 완료되었습니다."))
+        } catch (e: Exception) {
+            println("Error during unlink process for user ${member.username}: ${e.message}")
+            e.printStackTrace()
+            return ResponseEntity.status(500).body(mapOf("message" to "연동 해제 중 서버 오류 발생: ${e.message}"))
+        }
+    }
 
     @PostMapping("/register")
     fun register(@RequestBody memberDto: MemberDto): ResponseEntity<Map<String, String>> {

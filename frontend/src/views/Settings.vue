@@ -78,9 +78,6 @@
                 <p class="text-[10px] text-slate-400 font-medium">현재 계정에서 로그아웃합니다.</p>
               </div>
             </div>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-4 h-4 text-slate-300">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
           </div>
           
           <div class="p-5 flex items-center justify-between group cursor-pointer hover:bg-slate-50 transition-colors" @click="handleWithdraw">
@@ -92,7 +89,7 @@
               </div>
               <div class="space-y-0.5 text-left">
                 <p class="text-xs font-bold text-red-600">회원 탈퇴</p>
-                <p class="text-[10px] text-slate-400 font-medium">모든 기록이 즉시 삭제됩니다.</p>
+                <p class="text-[10px] text-slate-400 font-medium">모든 기록이 즉시 삭제되며 복구할 수 없습니다.</p>
               </div>
             </div>
           </div>
@@ -235,16 +232,55 @@ const handleContact = () => {
 }
 
 const handleWithdraw = async () => {
-  if (confirm('정말로 탈퇴하시겠습니까? 모든 기록이 즉시 삭제되며 복구할 수 없습니다.')) {
+  const provider = user.value.provider
+  const confirmMsg = provider 
+    ? `정말로 탈퇴하시겠습니까? ${provider} 연동이 해제되며 모든 기록이 즉시 삭제됩니다.`
+    : '정말로 탈퇴하시겠습니까? 모든 기록이 즉시 삭제되며 복구할 수 없습니다.'
+
+  if (confirm(confirmMsg)) {
     try {
-      await axios.delete('/api/user/withdraw')
-      alert('탈퇴가 완료되었습니다.')
+      if (provider === 'kakao') {
+        // 카카오 SDK 초기화 확인
+        if (window.Kakao && !window.Kakao.isInitialized()) {
+          window.Kakao.init('10370eb1fddb35728f39be1f5a057cb5');
+        }
+        
+        // 1. 카카오 서버 연동 해제 시도 (토큰이 없을 수 있으므로 실패해도 우리 서비스는 탈퇴 진행)
+        if (window.Kakao) {
+          try {
+            await window.Kakao.API.request({ url: '/v1/user/unlink' });
+            console.log('Kakao server unlink success');
+          } catch (kakaoErr) {
+            console.warn('Kakao server unlink failed, proceeding with backend:', kakaoErr);
+          }
+        }
+      }
+
+      // 2. 백엔드 서버 데이터 삭제 요청
+      if (provider) {
+        // 소셜 계정은 /api/member/unlink 호출 (백엔드에서 연동해제+데이터삭제 통합 수행)
+        const res = await axios.post('/api/member/unlink')
+        alert(res.data.message || '탈퇴가 완료되었습니다.')
+      } else {
+        // 일반 계정은 /api/user/withdraw 호출
+        await axios.delete('/api/user/withdraw')
+        alert('탈퇴가 완료되었습니다.')
+      }
+      
       router.push('/login')
     } catch (err) {
-      alert('탈퇴 처리 중 오류가 발생했습니다.')
+      console.error('Withdraw error:', err);
+      const errorMsg = err.response?.data?.message || err.message || '알 수 없는 오류';
+      alert(`탈퇴 처리 중 오류가 발생했습니다: ${errorMsg}`);
     }
   }
 }
 
-onMounted(fetchUser)
+onMounted(() => {
+  fetchUser();
+  if (window.Kakao && !window.Kakao.isInitialized()) {
+    window.Kakao.init('10370eb1fddb35728f39be1f5a057cb5');
+    console.log('Kakao SDK initialized in Settings onMounted');
+  }
+})
 </script>

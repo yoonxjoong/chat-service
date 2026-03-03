@@ -213,17 +213,16 @@ const handleSocialLogin = (provider) => {
     if (!window.Kakao) return alert('카카오 SDK 로드 중...');
     if (!window.Kakao.isInitialized()) window.Kakao.init('10370eb1fddb35728f39be1f5a057cb5');
     
-    // 매번 동의 화면(및 계정 선택)을 띄우려면 prompt: 'select_account' 추가
+    // prompt 옵션을 제거하여 이미 동의한 사용자는 바로 로그인되도록 함
     window.Kakao.Auth.authorize({ 
-      redirectUri,
-      prompt: 'select_account'
+      redirectUri
     });
   } 
   else if (provider === 'naver') {
     const clientId = 'yE_8k2KwVSQpt144laNn';
     const state = Math.random().toString(36).substring(2);
-    // auth_type=reprompt: 네이버에서 항상 동의 창을 띄우는 옵션
-    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&auth_type=reprompt`;
+    // auth_type=reprompt를 제거하여 반복적인 동의 요청을 방지
+    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
     window.location.href = naverAuthUrl;
   }
   else {

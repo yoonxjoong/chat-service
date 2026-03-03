@@ -26,11 +26,20 @@ class UserController(
             return ResponseEntity.status(401).body(mapOf("message" to "Not logged in"))
         }
         val member = memberRepository.findByUsername(userDetails.username)
+        
+        // provider가 null인 경우 username에서 유추 (legacy 대응)
+        val inferredProvider = member?.provider ?: when {
+            member?.username?.startsWith("kakao_") == true -> "kakao"
+            member?.username?.startsWith("naver_") == true -> "naver"
+            else -> null
+        }
+
         return ResponseEntity.ok(mapOf(
             "username" to (member?.username ?: ""),
             "nickname" to (member?.nickname ?: userDetails.username),
             "profileImageUrl" to member?.profileImageUrl,
-            "distanceUnit" to (member?.distanceUnit ?: "METER")
+            "distanceUnit" to (member?.distanceUnit ?: "METER"),
+            "provider" to inferredProvider
         ))
     }
 
